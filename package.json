@@ -1,0 +1,38 @@
+{
+  "name": "ani-track",
+  "version": "0.0.1",
+  "description": "",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "author": "androoo06",
+  "license": "ISC",
+  "repository": "https://github.com/androoo06/ani-track",
+  "publish": {
+    "provider": "github",
+    "releaseType": "release"
+  },
+  "build": {
+    "appId": "com.androoo06.anitrack",
+    "productName": "Ani-Track",
+    "win": {
+      "target": "nsis"
+    },
+    "directories": {
+      "output": "dist"
+    },
+    "icon": "logo.ico"
+  },
+  "dependencies": {
+    "anilist-node": "^1.14.1",
+    "childprocess": "^2.0.2",
+    "electron-updater": "^6.1.1",
+    "ws": "^8.13.0"
+  },
+  "devDependencies": {
+    "electron": "^26.1.0",
+    "electron-builder": "^24.6.3"
+  }
+}
