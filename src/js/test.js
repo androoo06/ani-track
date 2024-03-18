@@ -21,6 +21,10 @@ function openAsPopup(element) {
 }
 
 $(".collapsible").on("click", (event) => {
+    if ($(event.target).is("input")) {
+        return
+    }
+
     let collapsible = $(event.target).closest(".collapsible")
     let hidden = collapsible.find(".hidden")
     let svg = collapsible.find(".left").find("span")
@@ -31,9 +35,8 @@ $(".collapsible").on("click", (event) => {
     } else {
         svg.css("transform", "rotate(180deg)")
         hidden.css("display", "none")
-
-        openAsPopup($("#popup-window")[0])
     }
 })
 
-$("#popup-window").on("click", closePopup)
+//openAsPopup($("#popup-window")[0])
+// $("#popup-window").on("click", closePopup)

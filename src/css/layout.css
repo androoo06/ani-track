@@ -1,25 +1,38 @@
-#page {
-    height: 90vh;
-    width: 100%;
-    /* background-color: yellow; */
-}
-
 #title {
+    display: flex;
+    top: 0;
+
     height: 7vh;
     font-size: 6vh;
     line-height: 7vh;
+    justify-content: center;
 
-    text-align: center;
     color: white;
+    z-index: 3;
+
+    background-color: var(--bg-color);
+}
+
+#page {
+    position: absolute;
+    width: 100%;
+    top: 7vh;
+    height: 90vh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    
+    /* background-color: yellow; */
 }
 
 #version {
+    display: flex;
+    top: 97vh;
+    float: right;
+
     height: 3vh;
     font-size: 2vh;
     line-height: 3vh;
 
-    text-align: left;
-    /* padding-left: 2%; */
-
     color: white;
+    background-color: var(--bg-color);
 }
