@@ -18,13 +18,17 @@ const createWindow = () => {
         },
     })
 
+    root.webContents.once('dom-ready', () => {
+        root.webContents.openDevTools() // for the console stuff
+
+        console.log('alert')
+        root.webContents.send("alert")
+    })
+
     root.loadFile('src/app.html')
     root.removeMenu()
 
-    root.webContents.once('dom-ready', () => {
-        console.log('e')
-        root.webContents.send("alert")
-    })
+    root.maximize()
 }
 
 app.whenReady().then(createWindow)

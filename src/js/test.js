@@ -1,6 +1,7 @@
-const { ipcRenderer, clipboard, shell } = require("electron");
+const { ipcRenderer } = require("electron");
+
+window.$ = window.jQuery = require('../node_modules/jquery/dist/jquery.min.js');
 
 ipcRenderer.on("alert", () => {
-    alert("RAh")
     ipcRenderer.send("receive")
 })
