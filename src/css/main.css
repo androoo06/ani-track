@@ -48,7 +48,11 @@ html, body {
 }
 
 .list-tab {
+    font-size: 3vh;
     min-height: 5vh;
-    width: 75%;
+    line-height: 5vh;
+    width: 45%;
     background-color: red;
+
+    color: white;
 }

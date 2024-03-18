@@ -4,10 +4,10 @@
     width: 100%;
     min-height: 5vh;
 
-    background-color: yellow;
+    background-color: navy;
 }
 
-.collapsible button {
+.collapsible span{
     aspect-ratio: 1;
     height: 100%;
 
@@ -22,7 +22,7 @@
     z-index: 1;
 }
 
-.collapsible .left {
+.left {
     position: absolute;
     left: 0;
 
@@ -30,6 +30,15 @@
     min-height: 5vh;
 
     /* background-color: aqua; */
+}
+
+.left-c1 {
+    position: absolute;
+
+    width: 90%;
+    
+    min-height: 4.5vh;
+    line-height: 4.5vh;
 }
 
 .collapsible .hidden {
