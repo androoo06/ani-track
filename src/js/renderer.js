@@ -1,7 +1,7 @@
 const { ipcRenderer } = require("electron");
 window.$ = window.jQuery = require('../node_modules/jquery/dist/jquery.min.js');
 
-ipcRenderer.on("version", (ver) => {
+ipcRenderer.on("version", (_, ver) => {
     $("#version").text(`v${ver}`)
 })
 

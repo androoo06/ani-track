@@ -1,5 +1,6 @@
 const { app, BrowserWindow, dialog, ipcMain, globalShortcut } = require('electron')
 const { autoUpdater } = require("electron-updater")
+const db = require("./dbManager")
 
 // const anilist = require('anilist-node');
 // const Anilist = new anilist();
@@ -8,6 +9,14 @@ let root = null;
 
 autoUpdater.allowPrerelease = false
 autoUpdater.allowDowngrade = false
+
+function wrapMessage(channel, data) {
+    root.webContents.send(channel, data)
+}
+
+function sendVersion() {
+    wrapMessage("version", app.getVersion())
+}
 
 const createWindow = () => {
     if (BrowserWindow.getAllWindows().length !== 0) {
@@ -24,7 +33,12 @@ const createWindow = () => {
     root.webContents.once('dom-ready', () => {
         root.webContents.openDevTools() // for the console stuff
 
-        
+        db.openDB()
+        sendVersion()
+    })
+
+    root.on('close', function (e) {
+        db.closeDB()
     })
 
     root.loadFile('src/app.html')
@@ -35,13 +49,9 @@ const createWindow = () => {
 
 app.whenReady().then(createWindow)
 
-ipcMain.on("receive", () => {
-    console.log("received")
-})
+ipcMain.on("wrap-message", wrapMessage)
 
-autoUpdater.on("update-downloaded", () => {
-    root.webContents.send("version", `${app.getVersion()} - quit to install update`)
-})
+autoUpdater.on("update-downloaded", sendVersion)
 
 autoUpdater.on("error", (info) => {
     console.log('err')
