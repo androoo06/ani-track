@@ -1,2 +1,5 @@
 node_modules/
 dist/
+tests/
+src/assets/data/storage/
+resources.txt

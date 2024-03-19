@@ -36,3 +36,9 @@
     color: white;
     background-color: var(--bg-color);
 }
+
+/* tabs for the page element */
+.tab {
+    width: 100%;
+    background-color: blue;
+}

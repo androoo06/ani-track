@@ -10,15 +10,21 @@
 </head>
 
 <body>
-    <div id="popup-window"></div>
+    <div id="popup-window">
+        <div class="-title">
+            ANIME TITLE
+        </div>
+        <button style="background: url(assets/media/x.svg);"></button>
+    </div>
 
     <div id="main">
         <div class="sticky -top no-highlight" id="title">
             HOME
+            <button id="a"></button>
         </div>
         
         <div id="page">
-            <div id="home">
+            <div id="home" class="tab">
                 <div class="list-tab">
                     <div class="collapsible">
                         <div class="left">
@@ -77,13 +83,49 @@
                         </div>
                     </div>
                 </div>
-                <div class="list-tab no-highlight">
+                <div class="list-tab no-highlight switch-tab">
                     HISTORY
                 </div>
-                <div class="list-tab no-highlight">
+                <div class="list-tab no-highlight switch-tab">
                     DATA
                 </div>
+                <div class="list-tab no-highlight switch-tab">
+                    DEVELOPER CONSOLE
+                </div>
+                <div id="go-home" class="hidden">
+                    HOME
+                </div>
+            </div>
+            <div id="history" class="tab hidden">
+                <div class="list-tab no-highlight switch-tab">
+                    HISTORY
+                </div>
+                <div class="list-tab no-highlight switch-tab">
+                    HISTORY
+                </div>
+                <div class="list-tab no-highlight switch-tab">
+                    HISTORY
+                </div>
+            </div>
+            <div id="data" class="tab hidden">
                 <div class="list-tab no-highlight">
+                    DATAe
+                </div>
+                <div class="list-tab no-highlight">
+                    DATAe
+                </div>
+                <div class="list-tab no-highlight">
+                    DATAe
+                </div>
+            </div>
+            <div id="developer-console" class="tab hidden">
+                <div class="list-tab no-highlight switch-tab">
+                    DEVELOPER CONSOLE
+                </div>
+                <div class="list-tab no-highlight switch-tab">
+                    DEVELOPER CONSOLE
+                </div>
+                <div class="list-tab no-highlight switch-tab">
                     DEVELOPER CONSOLE
                 </div>
             </div>

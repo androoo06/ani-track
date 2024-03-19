@@ -1,6 +1,7 @@
 @import url(layout.css);
 @import url(collapsible.css);
 @import url(search.css);
+@import url(animebox.css);
 
 :root {
     --bg-color: #191d23;
@@ -50,26 +51,6 @@ html, body {
     left: 0;
 
     /* overflow: hidden; */
-}
-
-#home {
-    /* padding-left: 3%; */
-    width: 100%;
-    background-color: blue;
-}
-
-#popup-window {
-    position: absolute;
-    aspect-ratio: 1;
-    width: 30%;
-    background-color: yellow;
-
-    left: 35%;
-    top: 15%;
-    z-index: 99;
-    opacity: 1;
-
-    display: none;
 }
 
 .list-tab {

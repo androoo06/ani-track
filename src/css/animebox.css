@@ -1,0 +1,36 @@
+#popup-window {
+    display: block;
+    position: absolute;
+    aspect-ratio: 1.5;
+
+    background-color: yellow;
+
+    left: 15%;
+    top: 15%;
+    width: 70%;
+    height: 70%;
+
+    z-index: 99;
+    opacity: 1;
+    /* display: none; */
+}
+
+#popup-window .-title {
+    position: absolute;
+    background-color: green;
+    width: 90%;
+    height: 4vh;
+    text-align: center;
+    font-size: 3vh;
+    line-height: 4vh;
+    overflow: hidden;
+
+    color: white;
+}
+
+#popup-window button {
+    float: right;
+    aspect-ratio: 1;
+    height: 4vh;
+    border: none;
+}

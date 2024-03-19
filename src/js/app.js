@@ -1,6 +1,9 @@
 const { app, BrowserWindow, dialog, ipcMain, globalShortcut } = require('electron')
 const { autoUpdater } = require("electron-updater")
 
+// const anilist = require('anilist-node');
+// const Anilist = new anilist();
+
 let root = null;
 
 autoUpdater.allowPrerelease = false
@@ -21,8 +24,7 @@ const createWindow = () => {
     root.webContents.once('dom-ready', () => {
         root.webContents.openDevTools() // for the console stuff
 
-        console.log('alert')
-        root.webContents.send("alert")
+        
     })
 
     root.loadFile('src/app.html')

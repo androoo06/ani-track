@@ -1,10 +1,23 @@
 const { ipcRenderer } = require("electron");
-
 window.$ = window.jQuery = require('../node_modules/jquery/dist/jquery.min.js');
 
-// ipcRenderer.on("alert", () => {
-//     ipcRenderer.send("receive")
-// })
+ipcRenderer.on("version", (ver) => {
+    $("#version").text(`v${ver}`)
+})
+
+let openTab = "home"
+
+function switchTab(event) {
+    let newTabDisplay = $(event.target).text().trim()
+    let newTab = newTabDisplay.replace(" ", "-").toLowerCase()
+
+    $(`#${newTab}`).toggleClass("hidden")
+    $(`#${openTab}`).toggleClass("hidden")
+    
+    openTab = newTab
+
+    $('#title')[0].childNodes[0].nodeValue = newTabDisplay
+}
 
 function closePopup(event) {
     $(event.target).css("display", "none")
@@ -36,6 +49,13 @@ $(".collapsible").on("click", (event) => {
         svg.css("transform", "rotate(180deg)")
         hidden.css("display", "none")
     }
+})
+
+$(".switch-tab").on("click", switchTab)
+
+let a = document.getElementById("a")
+$(a).on("click", () => {
+    switchTab({"target": $("#go-home")[0]})
 })
 
 //openAsPopup($("#popup-window")[0])
