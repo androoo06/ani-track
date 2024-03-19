@@ -1,36 +1,136 @@
-#popup-window {
+#anime-popup {
     display: block;
     position: absolute;
-    aspect-ratio: 1.5;
 
-    background-color: yellow;
+    background-color: var(--secondary-color);
+    color: white;
 
-    left: 15%;
+    left: 7.5%;
     top: 15%;
-    width: 70%;
-    height: 70%;
+    width: 85%;
+    /* height: 70%; */
+    min-height: 50%;
 
     z-index: 99;
     opacity: 1;
-    /* display: none; */
+
+    border-radius: 5px 5px 5px 5px;
+
+    display: none;
 }
 
-#popup-window .-title {
+#anime-popup .-title {
     position: absolute;
-    background-color: green;
-    width: 90%;
-    height: 4vh;
-    text-align: center;
-    font-size: 3vh;
-    line-height: 4vh;
+    /* background-color: green; */
+    width: 93%;
+    height: 8vh;
+    text-align: left;
+    font-size: 5vh;
+    line-height: 8vh;
     overflow: hidden;
+    padding-left: 2%;
+    z-index: 2;
 
     color: white;
 }
 
-#popup-window button {
-    float: right;
+#anime-popup .-desc {
+    position: absolute;
+    top: 65%;
+    height: 35%;
+    width: 100%;
+    /* background-color: blue; */
+
+    overflow: auto;
+}
+
+.popup-exit {
+    position: absolute;
+
     aspect-ratio: 1;
-    height: 4vh;
+    width: 5%;
+    top: 0;
+    right: 0;
     border: none;
+
+    z-index: 3;
+}
+
+#anime-popup img {
+    position: absolute;
+    /* background-color: red; */
+    aspect-ratio: 1;
+    width: 30vmin;
+    right: 0;
+    border: none;
+    margin: 0;
+
+    z-index: 1;
+}
+
+#anime-popup table {
+    position: absolute;
+    /* background-color: blue; */
+    width: 75%;
+    height: 50%;
+    bottom: 35%;
+
+    border-collapse: collapse;
+    table-layout: fixed;
+    z-index: 3;
+}
+
+#anime-popup table th {
+    /* background-color: white; */
+    position: relative;
+}
+
+#anime-popup table th ::-webkit-scrollbar {
+    display: none;
+}
+
+#anime-popup .-select-title {
+    /* background-color: red; */
+    width: 100%;
+    top: 3%;
+
+    position: absolute;
+
+    font-size: 3.25vh;
+    height: 15%;
+    line-height: 4vh;
+}
+
+#anime-popup .-select-content {
+    /* background-color: blue; */
+
+    width: 100%;
+    top: 18%;
+    height: 82%;
+    position: absolute;
+    font-size: 3vh;
+    overflow: auto;
+}
+
+.-selection {
+    border-radius: 3px 3px 3px 3px;
+
+    background-color: pink;
+
+    display: inline-grid;
+    text-align: center;
+    padding-left: 2%;
+    padding-right: 2%;
+
+    font-size: 1.5vh;
+}
+
+.-de-select {
+    font-size: 2vh;
+    border: none;
+    background: none;
+}
+
+.-selection-hoverable .-de-select:hover {
+    background: url(../assets/media/x.svg);
 }
