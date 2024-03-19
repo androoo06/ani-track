@@ -32,13 +32,13 @@ const createWindow = () => {
 
     root.webContents.once('dom-ready', () => {
         root.webContents.openDevTools() // for the console stuff
-
-        db.openDB()
+        
         sendVersion()
+        db.init()
     })
 
     root.on('close', function (e) {
-        db.closeDB()
+        db.close()
     })
 
     root.loadFile('src/app.html')

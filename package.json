@@ -22,7 +22,16 @@
         },
         "directories": {
             "output": "dist"
-        }
+        },
+        "extraResources": [
+            {
+                "from": "./src/assets/",
+                "to": "assets/",
+                "filter": [
+                    "**/*"
+                ]
+            }
+        ]
     },
     "dependencies": {
         "anilist-node": "^1.14.1",
