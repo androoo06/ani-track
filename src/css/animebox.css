@@ -119,7 +119,7 @@
 
     display: inline-grid;
     text-align: center;
-    padding-left: 2%;
+    /* padding-left: 2%; */
     padding-right: 2%;
 
     font-size: 1.5vh;

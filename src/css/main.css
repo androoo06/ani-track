@@ -58,8 +58,37 @@ html, body {
     font-size: 3vh;
     min-height: 5vh;
     line-height: 5vh;
-    width: 45%;
+    width: 100%;
     background-color: red;
+    position: relative;
 
     color: white;
+}
+
+.btn-style {
+    border-radius: 5px 5px 5px 5px;
+    border: none;
+    background-color: white;
+}
+
+.main-btn {
+    width: 25%;
+    height: 3vh;
+
+    line-height: 2vh;
+    font-size: 2vh;
+}
+
+.btn-style:hover {
+    background-color: rgb(245, 243, 243);
+}
+
+.manage-btn {
+    width: 50%;
+    height: 4vh;
+
+    line-height: 3vh;
+    font-size: 2.5vh;
+
+    float: right;
 }
