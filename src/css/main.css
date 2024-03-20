@@ -59,7 +59,7 @@ html, body {
     min-height: 5vh;
     line-height: 5vh;
     width: 100%;
-    background-color: red;
+    /* background-color: red; */
     position: relative;
 
     color: white;
