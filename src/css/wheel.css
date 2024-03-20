@@ -1,0 +1,41 @@
+#wheel-popup {
+    display: block;
+    position: absolute;
+
+    background-color: var(--secondary-color);
+    /* background-color: black; */
+    color: white;
+
+    left: 30%;
+    top: 15%;
+    width: 40%;
+    /* min-height: 50%; */
+
+    z-index: 99;
+    opacity: 1;
+
+    border-radius: 5px 5px 5px 5px;
+
+    /* overflow: auto; */
+    display: none;
+}
+
+#wheel-popup .-title {
+    /* background-color: yellow; */
+    text-align: center;
+    font-size: 5vh;
+}
+
+#wheel-popup .-sub-title {
+    /* background-color: yellow; */
+    text-align: center;
+    font-size: 3.75vh;
+}
+
+#wheel-popup .wheel-btn {
+    width: 30%;
+    position: absolute;
+    left: 35%;
+    
+    font-size: 2vh;
+}

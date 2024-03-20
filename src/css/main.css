@@ -2,6 +2,7 @@
 @import url(collapsible.css);
 @import url(search.css);
 @import url(animebox.css);
+@import url(wheel.css);
 
 :root {
     --bg-color: #191d23;
@@ -71,16 +72,16 @@ html, body {
     background-color: white;
 }
 
+.btn-style:hover {
+    background-color: rgb(245, 243, 243);
+}
+
 .main-btn {
     width: 25%;
     height: 3vh;
 
     line-height: 2vh;
     font-size: 2vh;
-}
-
-.btn-style:hover {
-    background-color: rgb(245, 243, 243);
 }
 
 .manage-btn {
