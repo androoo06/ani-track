@@ -14,6 +14,7 @@
     <div id="anime-popup">
         <div class="-title">
             ANIME TITLE
+            <input type="checkbox">
         </div>
         <button class="popup-exit" style="background: url(assets/media/x.svg);"></button>
         <img>
@@ -36,7 +37,18 @@
                         <button class="-de-select">+</button>
                     </div>
                     <div class="-selection -selection-hoverable no-highlight">
-                        <button class="-de-select">Genre2</button>
+                        <button class="-de-select">Tag1</button>
+                    </div>
+                </div>
+            </th>
+            <th>
+                <div class="-select-title">People</div>
+                <div class="-select-content">
+                    <div class="-selection no-highlight">
+                        <button class="-de-select">+</button>
+                    </div>
+                    <div class="-selection -selection-hoverable no-highlight">
+                        <button class="-de-select">Person1</button>
                     </div>
                 </div>
             </th>
@@ -128,7 +140,7 @@
         </div>
         
         <div id="page">
-            <div id="home" class="tab hidden">
+            <div id="home" class="tab ">
                 <div class="list-tab">
                     <button class="main-btn btn-style">SEARCH ANIME</button>
                 </div>
@@ -183,6 +195,29 @@
                         <div class="left">
                             <div class="left-c1">
                                 TAGS
+                            </div> 
+                            <span></span>
+                        </div>
+                        <div class="hidden">
+                            <br>
+                            n <br>
+                            i <br>
+                            n <br>
+                            u <br>
+                            n <br>
+                            e <br>
+                            n <br>
+                        </div>
+                    </div>
+                </div>
+                <div class="list-tab no-highlight">
+                    <div class="block" style="float: right; width: 50%;">
+                        <button class="manage-btn btn-style">MANAGE</button>
+                    </div>
+                    <div class="collapsible">
+                        <div class="left">
+                            <div class="left-c1">
+                                RECOMMENDERS
                             </div> 
                             <span></span>
                         </div>
@@ -330,7 +365,7 @@
                 </div>
             </div>
 
-            <div id="manage-$$$" class="tab">
+            <div id="manage-$$$" class="tab hidden">
                 <div class="list-tab">
                     <div class="block" style="padding-left: 11.5%; width: 50%;">
                         <button class="manage-btn btn-style">ADD</button>

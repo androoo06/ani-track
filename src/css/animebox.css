@@ -16,13 +16,13 @@
 
     border-radius: 5px 5px 5px 5px;
 
-    display: none;
+    /* display: none; */
 }
 
 #anime-popup .-title {
     position: absolute;
     /* background-color: green; */
-    width: 93%;
+    width: 80%;
     height: 8vh;
     text-align: left;
     font-size: 5vh;
@@ -32,6 +32,16 @@
     z-index: 2;
 
     color: white;
+}
+
+#anime-popup input {
+    position: absolute;
+    height: 50%;
+    top: 25%;
+
+    left: 90%;
+    right: 0px;
+    z-index: 3;
 }
 
 #anime-popup .-desc {
