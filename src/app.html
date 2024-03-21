@@ -13,8 +13,18 @@
 <body>
     <div id="anime-popup">
         <div class="-title">
-            ANIME TITLE
-            <input type="checkbox">
+            <div class="-half" style="float: left;">
+                ANIME TITLE
+            </div>
+            <div class="-half -right" style="float: right;">
+                <input type="checkbox">
+                <div class="-small">
+                    Unrated
+                </div>
+                <div class="-rating hidden">
+                    10★
+                </div>
+            </div>
         </div>
         <button class="popup-exit" style="background: url(assets/media/x.svg);"></button>
         <img>
@@ -131,6 +141,12 @@
         <button class="popup-exit" style="background: url(assets/media/x.svg);"></button>
         <div class="-title">CREATE NEW</div>
         <input class="-search-bar" type="text" placeholder="Enter new name" name="search">
+    </div>
+
+    <div id="rating-popup">
+        <button class="popup-exit" style="background: url(assets/media/x.svg);"></button>
+        <div>RATE THIS ANIME</div>
+        <input class="-search-bar" type="text" placeholder="Enter star rating out of 10" name="search">
     </div>
 
     <div id="main">

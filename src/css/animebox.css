@@ -16,7 +16,7 @@
 
     border-radius: 5px 5px 5px 5px;
 
-    /* display: none; */
+    display: none;
 }
 
 #anime-popup .-title {
@@ -148,3 +148,17 @@
 .-selection-hoverable .-de-select:hover {
     background: url(../assets/media/x.svg);
 }
+
+#anime-popup .-half {
+    width: 50%;
+    /* background-color: red; */
+}
+
+#anime-popup .-small{
+    font-size: 3vw;
+    color: #d7d5d5b1;
+}
+
+/* .-rating {
+    color: blue;
+} */

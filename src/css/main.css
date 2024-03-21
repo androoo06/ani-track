@@ -7,6 +7,7 @@
 @import url(role.css);
 @import url(remove.css);
 @import url(create.css);
+@import url(rating.css);
 
 :root {
     --bg-color: #191d23;
