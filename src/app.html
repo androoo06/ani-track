@@ -110,6 +110,11 @@
         </div>
     </div>
 
+    <div id="remove-popup">
+        <button class="popup-exit" style="background: url(assets/media/x.svg);"></button>
+        <button class="btn-style -remove">REMOVE?</button>
+    </div>
+
     <div id="main">
         <div class="sticky -top no-highlight" id="title">
             HOME
@@ -117,7 +122,7 @@
         </div>
         
         <div id="page">
-            <div id="home" class="tab">
+            <div id="home" class="tab hidden">
                 <div class="list-tab">
                     <button class="main-btn btn-style">SEARCH ANIME</button>
                 </div>
@@ -240,6 +245,14 @@
                             <input type="text" placeholder="max rating">
                         </div>
                     </th>
+                    <th>
+                        <div class="-select-title">
+                            Search Title
+                        </div>
+                        <div class="-select-content">
+                            <input type="text" placeholder="title">
+                        </div>
+                    </th>
                 </table>
                 <div class="list-tab no-highlight">
                     <div>RESULTS:</div>
@@ -312,7 +325,11 @@
             </div>
 
             <!-- Manage Watchlists -->
+            <div id="manage-watchlists" class="tab">
+                
+            </div>
             <!-- Manage Tags -->
+
         </div>
 
         <div class="sticky -bottom no-highlight" id="version">

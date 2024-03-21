@@ -5,6 +5,7 @@
 @import url(wheel.css);
 @import url(history.css);
 @import url(role.css);
+@import url(remove.css);
 
 :root {
     --bg-color: #191d23;
