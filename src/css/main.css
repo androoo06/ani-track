@@ -4,6 +4,7 @@
 @import url(animebox.css);
 @import url(wheel.css);
 @import url(history.css);
+@import url(role.css);
 
 :root {
     --bg-color: #191d23;

@@ -1,0 +1,63 @@
+#role-popup {
+    display: block;
+    position: absolute;
+
+    background-color: var(--secondary-color);
+    /* background-color: black; */
+    color: white;
+
+    left: 30%;
+    top: 15%;
+    width: 40%;
+    height: 50%;
+
+    z-index: 99;
+    opacity: 1;
+
+    border: none;
+    margin: 0;
+    border-radius: 5px 5px 5px 5px;
+
+    /* overflow: auto; */
+    display: none;
+}
+
+#role-popup input {
+    position: absolute;
+
+    width: 65%;
+    height: 8.5%;
+
+    left: 17.5%;
+    top: 2.5%;
+}
+
+#role-popup .-content {
+    position: absolute;
+
+    width: 100%;
+    height: 83%;
+
+    overflow: auto;
+
+    left: 0;
+    bottom: 2.5%;
+
+    /* background-color: red; */
+}
+
+#role-popup div::-webkit-scrollbar {
+    display: none;
+}
+
+#role-popup .-selectable:hover {
+    background-color: #6e6c8655;
+}
+
+#role-popup .-selectable {
+    height: 3.5vw;
+    line-height: 3.5vw;
+    font-size: 2.5vw;
+
+    /* background-color: red; */
+}

@@ -102,6 +102,14 @@
         <br>
     </div>
 
+    <div id="role-popup">
+        <button class="popup-exit" style="background: url(assets/media/x.svg);"></button>
+        <input class="-search-bar" type="text" placeholder="Filter by Name" name="search">
+        <div class="-content">
+            <div class="-selectable">lol</div>
+        </div>
+    </div>
+
     <div id="main">
         <div class="sticky -top no-highlight" id="title">
             HOME
@@ -109,7 +117,7 @@
         </div>
         
         <div id="page">
-            <div id="home" class="tab hidden">
+            <div id="home" class="tab">
                 <div class="list-tab">
                     <button class="main-btn btn-style">SEARCH ANIME</button>
                 </div>
@@ -118,29 +126,6 @@
                         <div class="left">
                             <div class="left-c1">
                                 CURRENTLY WATCHING
-                            </div> 
-                            <span></span>
-                        </div>
-                        <div class="hidden">
-                            <br>
-                            n <br>
-                            i <br>
-                            n <br>
-                            u <br>
-                            n <br>
-                            e <br>
-                            n <br>
-                        </div>
-                    </div>
-                </div>
-                <div class="list-tab no-highlight">
-                    <div class="block" style="float: right; width: 50%;">
-                        <button class="manage-btn btn-style">MANAGE</button>
-                    </div>
-                    <div class="collapsible">
-                        <div class="left">
-                            <div class="left-c1">
-                                TAGS
                             </div> 
                             <span></span>
                         </div>
@@ -179,6 +164,29 @@
                         </div>
                     </div>
                 </div>
+                <div class="list-tab no-highlight">
+                    <div class="block" style="float: right; width: 50%;">
+                        <button class="manage-btn btn-style">MANAGE</button>
+                    </div>
+                    <div class="collapsible">
+                        <div class="left">
+                            <div class="left-c1">
+                                TAGS
+                            </div> 
+                            <span></span>
+                        </div>
+                        <div class="hidden">
+                            <br>
+                            n <br>
+                            i <br>
+                            n <br>
+                            u <br>
+                            n <br>
+                            e <br>
+                            n <br>
+                        </div>
+                    </div>
+                </div>
                 <div class="list-tab no-highlight switch-tab">
                     HISTORY
                 </div>
@@ -192,7 +200,7 @@
                     HOME
                 </div>
             </div>
-            <div id="history" class="tab">
+            <div id="history" class="tab hidden">
                 <div class="list-tab no-highlight">
                     FILTERS:
                 </div>
@@ -302,6 +310,9 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Manage Watchlists -->
+            <!-- Manage Tags -->
         </div>
 
         <div class="sticky -bottom no-highlight" id="version">
