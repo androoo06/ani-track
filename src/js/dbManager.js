@@ -1,6 +1,6 @@
 const sqlite3 = require('sqlite3').verbose();
 const { existsSync, copyFile, constants } = require('fs')
-const path = require('path');
+const path = require('path')
 
 // Get whether it's in testing or in production
 var rootDir = path.dirname(__dirname).replace("app.asar", "")

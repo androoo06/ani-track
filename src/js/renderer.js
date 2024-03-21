@@ -108,5 +108,12 @@ $(".manage-btn").on("click", (event) => {
     switchTab(title, manage=true)
 })
 
+$("#add-item").on("click", () => {
+    openAsPopup($("#create-new-popup")[0])
+})
+
+$(".-addrole").on("click", () => {
+    openAsPopup($("#role-popup")[0])
+})
+
 // openAsPopup($("#anime-popup")[0])
-// $("#popup-window").on("click", closePopup)

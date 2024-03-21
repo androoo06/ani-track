@@ -4,6 +4,8 @@ input {
 
     font-size: 2vh;
     left: 5%;
+
+    text-align: center;
 }
 
 #search-popup {

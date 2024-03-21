@@ -1,14 +1,10 @@
-const { app, BrowserWindow, ipcMain, globalShortcut } = require('electron')
+const { app, BrowserWindow, ipcMain, globalShortcut, shell } = require('electron')
 const { autoUpdater } = require("electron-updater")
 const db = require("./dbManager")
+const path = require('path')
 
-// const anilist = require('anilist-node');
-// const Anilist = new anilist();
-
+let projectRoot = path.dirname(__dirname).replace("app.asar", "")
 let root = null;
-
-autoUpdater.allowPrerelease = false
-autoUpdater.allowDowngrade = false
 
 function wrapMessage(channel, data) {
     root.webContents.send(channel, data)
@@ -22,10 +18,6 @@ const createWindow = () => {
     if (BrowserWindow.getAllWindows().length !== 0) {
         return
     }
-
-    globalShortcut.register('f9', () => {
-        root.webContents.openDevTools()
-    })
 
     root = new BrowserWindow({
         webPreferences: {
@@ -47,14 +39,25 @@ const createWindow = () => {
     root.removeMenu()
 
     root.maximize()
+
+    // developer hotkeys
+    globalShortcut.register('f9', () => {
+        root.webContents.openDevTools()
+    })
+
+    globalShortcut.register('f8', () => {
+        shell.openPath(projectRoot)
+    })
 }
 
 app.whenReady().then(createWindow)
 
-ipcMain.on("wrap-message", wrapMessage)
+// auto updater
+
+autoUpdater.allowPrerelease = false
+autoUpdater.allowDowngrade = false
 
 autoUpdater.on("update-downloaded", sendVersion)
-
 autoUpdater.on("error", (info) => {
     console.log('err')
     root.webContents.send("version", `Error occurred: ${info}`)
