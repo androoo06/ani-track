@@ -7,6 +7,7 @@
     <title>Ani-Track or Whatever</title>
     <link rel="stylesheet" href="css/main.css">
     <script type="text/javascript" defer src="js/renderer.js"></script>
+    <script type="text/javascript" defer src="js/wheel.js"></script>
 </head>
 
 <body>
@@ -195,12 +196,6 @@
                 <div class="list-tab no-highlight switch-tab">
                     HISTORY
                 </div>
-                <div class="list-tab no-highlight switch-tab">
-                    HISTORY
-                </div>
-                <div class="list-tab no-highlight switch-tab">
-                    HISTORY
-                </div>
             </div>
             <div id="data" class="tab hidden">
                 <div class="list-tab no-highlight">
@@ -224,6 +219,7 @@
                     DEVELOPER CONSOLE
                 </div>
             </div>
+
             <div id="view-watchlist" class="tab">
                 <div class="list-tab no-highlight">
                     <div class="block" style="float: right; width: 50%;">
@@ -250,9 +246,17 @@
                 </div>
                 <div class="list-tab no-highlight">
                     <div class="block" style="float: right; width: 50%;">
-                        <button class="manage-btn btn-style">SPIN</button>
+                        <button id="spin-wheel" class="manage-btn btn-style">SPIN</button>
                     </div>
-                    WHEEL
+                    <div class="block">WHEEL</div>
+                    <div id="wheel-container">
+                        <div class="wheel" id="wheel">
+                            <div id="wheel-center"></div>
+                        </div>
+                        <div class="wheel" id="tttt">
+                            <div id="wheel-arrow" style="background: url(assets/media/wheeltick.svg);"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
