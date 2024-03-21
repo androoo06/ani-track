@@ -39,9 +39,10 @@ function spin() {
     let inc = 360/12
     let startNum = c-1
 
-    console.log(Math.floor(deg/inc), Math.floor(deg/inc)%c, inc)
+    // console.log(Math.floor(deg/inc), Math.floor(deg/inc)%c, inc)
     let victor = (startNum - Math.floor(deg/inc) + (c * y)) % c
-    console.log("VICTOR:", victor)
+    // console.log("VICTOR:", victor)
+
 }
 
 function fillWheel() {
@@ -80,4 +81,4 @@ function fillWheel() {
 
 fillWheel()
 
-document.getElementById("spin-wheel").onclick = spin
+$("#spin-wheel").on("click", spin)

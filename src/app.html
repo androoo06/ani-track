@@ -11,7 +11,7 @@
 </head>
 
 <body>
-    <div id="anime-popup">
+    <div id="anime-popup" class="--popup">
         <div class="-title">
             <div class="-half" style="float: left;">
                 ANIME TITLE
@@ -76,7 +76,7 @@
         </table>
     </div>
 
-    <div id="search-popup">
+    <div id="search-popup" class="--popup">
         <button class="popup-exit" style="background: url(assets/media/x.svg);"></button>
         <div class="-title">SEARCH</div>
         <input class="-search-bar" type="text" placeholder="Search Anime Title" name="search">
@@ -110,7 +110,7 @@
         </div>
     </div>
 
-    <div id="wheel-popup">
+    <div id="wheel-popup" class="--popup">
         <button class="popup-exit" style="background: url(assets/media/x.svg);"></button>
         <div class="-title">WHEEL SPIN RESULT</div>
         <div class="-sub-title">WHEEL SPIN RESULT</div>
@@ -124,7 +124,7 @@
         <br>
     </div>
 
-    <div id="role-popup">
+    <div id="role-popup" class="--popup">
         <button class="popup-exit" style="background: url(assets/media/x.svg);"></button>
         <input class="-search-bar" type="text" placeholder="Filter by Name" name="search">
         <div class="-content">
@@ -132,23 +132,23 @@
         </div>
     </div>
 
-    <div id="remove-popup" class="-one-button-popup">
+    <div id="remove-popup" class="-one-button-popup --popup">
         <button class="popup-exit" style="background: url(assets/media/x.svg);"></button>
         <button class="btn-style -remove">REMOVE</button>
     </div>
 
-    <div id="completed-popup" class="-one-button-popup">
+    <div id="completed-popup" class="-one-button-popup --popup">
         <button class="popup-exit" style="background: url(assets/media/x.svg);"></button>
         <button class="btn-style -remove">MARK AS COMPLETED</button>
     </div>
 
-    <div id="create-new-popup" class="-one-entry-popup">
+    <div id="create-new-popup" class="-one-entry-popup --popup">
         <button class="popup-exit" style="background: url(assets/media/x.svg);"></button>
         <div class="-title">CREATE NEW</div>
         <input class="-search-bar" type="text" placeholder="Enter new name" name="search">
     </div>
 
-    <div id="rating-popup" class="-one-entry-popup">
+    <div id="rating-popup" class="-one-entry-popup --popup">
         <button class="popup-exit" style="background: url(assets/media/x.svg);"></button>
         <div class="-title">RATE THIS ANIME</div>
         <input class="-search-bar" type="text" placeholder="Enter star rating out of 10" name="search">
@@ -163,7 +163,7 @@
         <div id="page">
             <div id="home" class="tab ">
                 <div class="list-tab">
-                    <button class="main-btn btn-style">SEARCH ANIME</button>
+                    <button class="main-btn btn-style -search-anime-button">SEARCH ANIME</button>
                 </div>
                 <div class="list-tab no-highlight">
                     <div class="collapsible">
@@ -187,7 +187,7 @@
                 </div>
                 <div class="list-tab no-highlight">
                     <div class="block" style="float: right; width: 50%;">
-                        <button class="manage-btn btn-style">MANAGE</button>
+                        <button class="manage-btn manage-btn-style btn-style">MANAGE</button>
                     </div>
                     <div class="collapsible">
                         <div class="left">
@@ -210,7 +210,7 @@
                 </div>
                 <div class="list-tab no-highlight">
                     <div class="block" style="float: right; width: 50%;">
-                        <button class="manage-btn btn-style">MANAGE</button>
+                        <button class="manage-btn manage-btn-style btn-style">MANAGE</button>
                     </div>
                     <div class="collapsible">
                         <div class="left">
@@ -233,7 +233,7 @@
                 </div>
                 <div class="list-tab no-highlight">
                     <div class="block" style="float: right; width: 50%;">
-                        <button class="manage-btn btn-style">MANAGE</button>
+                        <button class="manage-btn manage-btn-style btn-style">MANAGE</button>
                     </div>
                     <div class="collapsible">
                         <div class="left">
@@ -260,9 +260,6 @@
                 <div class="list-tab no-highlight switch-tab">
                     DATA
                 </div>
-                <!-- <div class="list-tab no-highlight switch-tab">
-                    DEVELOPER CONSOLE
-                </div> -->
                 <div id="go-home" class="hidden">
                     HOME
                 </div>
@@ -340,22 +337,11 @@
                     (recommender breakdown pie chart)
                 </div>
             </div>
-            <!-- <div id="developer-console" class="tab hidden">
-                <div class="list-tab no-highlight switch-tab">
-                    DEVELOPER CONSOLE
-                </div>
-                <div class="list-tab no-highlight switch-tab">
-                    DEVELOPER CONSOLE
-                </div>
-                <div class="list-tab no-highlight switch-tab">
-                    DEVELOPER CONSOLE
-                </div>
-            </div> -->
-
+            
             <div id="view-watchlist" class="tab hidden">
                 <div class="list-tab no-highlight">
                     <div class="block" style="float: right; width: 50%;">
-                        <button class="manage-btn btn-style">ADD</button>
+                        <button class="manage-btn-style btn-style -search-anime-button">ADD</button>
                     </div>
                     <div class="collapsible">
                         <div class="left">
@@ -378,7 +364,7 @@
                 </div>
                 <div class="list-tab no-highlight">
                     <div class="block" style="float: right; width: 50%;">
-                        <button id="spin-wheel" class="manage-btn btn-style">SPIN</button>
+                        <button id="spin-wheel" class="manage-btn-style btn-style">SPIN</button>
                     </div>
                     <div class="block">WHEEL</div>
                     <div id="wheel-container">
@@ -391,11 +377,10 @@
                     </div>
                 </div>
             </div>
-
-            <div id="manage-$$$" class="tab hidden">
+            <div id="manage-tab" class="tab hidden">
                 <div class="list-tab">
                     <div class="block" style="padding-left: 11.5%; width: 50%;">
-                        <button class="manage-btn btn-style">ADD</button>
+                        <button class="manage-btn-style btn-style">ADD</button>
                     </div>
                 </div>
                 <div class="list-tab">WATCHLIST 1</div>

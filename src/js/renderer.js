@@ -6,10 +6,22 @@ ipcRenderer.on("version", (_, ver) => {
 })
 
 let openTab = "home"
+let popups = [] // emulate a stack
 
-function switchTab(event) {
-    let newTabDisplay = $(event.target).text().trim()
-    let newTab = newTabDisplay.replace(" ", "-").toLowerCase()
+function peek(arr) {
+    if (arr.length == 0) return;
+    return arr[arr.length - 1]
+}
+
+function switchTab(event, manage=false) {
+    let newTab, newTabDisplay
+    if (manage == false) {
+        newTabDisplay = $(event.target).text().trim()
+        newTab = newTabDisplay.replace(" ", "-").toLowerCase()
+    } else {
+        newTabDisplay = `MANAGE ${event}`
+        newTab = "manage-tab"
+    }
 
     $(`#${newTab}`).toggleClass("hidden")
     $(`#${openTab}`).toggleClass("hidden")
@@ -25,18 +37,35 @@ function switchTab(event) {
     $('#title')[0].childNodes[0].nodeValue = newTabDisplay
 }
 
-function closePopup(event) {
-    $(event.target).css("display", "none")
+function toggleMain(bool) {
+    $("#main").css("opacity", (bool) ? 1 : 0.5)
+    $("#main").css("pointer-events", (bool) ? "auto" : "none")
+}
 
-    $("#main").css("opacity", 1)
-    $("#main").css("pointer-events", "auto")
+function closePopup(element) {
+    $(element).css("display", "none")
+    popups.pop()
+
+    // open previous popup
+    let existing = peek(popups)
+    if (existing) {
+        $(existing).css("display", "block")
+    } else {
+        toggleMain(true)
+    }
 }
 
 function openAsPopup(element) {
-    $("#main").css("opacity", 0.5)
-    $("#main").css("pointer-events", "none") //disable all clicking of main stuff
-
     $(element).css("display", "block")
+    toggleMain(false)
+
+    // hide existing popup
+    let existing = peek(popups)
+    if (existing) {
+        $(existing).css("display", "none")
+    }
+
+    popups.push(element)
 }
 
 $(".collapsible").on("click", (event) => {
@@ -66,5 +95,18 @@ $("#return-home").on("click", () => {
     switchTab({"target": $("#go-home")[0]})
 })
 
-//openAsPopup($("#popup-window")[0])
+$(".-search-anime-button").on("click", () => {
+    openAsPopup($("#search-popup")[0])
+})
+
+$(".popup-exit").on("click", (event) => {
+    closePopup($(event.target).closest(".--popup"))
+})
+
+$(".manage-btn").on("click", (event) => {
+    let title = $(event.target).closest(".list-tab").find(".collapsible").find(".left-c1").text()
+    switchTab(title, manage=true)
+})
+
+// openAsPopup($("#anime-popup")[0])
 // $("#popup-window").on("click", closePopup)

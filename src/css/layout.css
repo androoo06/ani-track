@@ -18,7 +18,7 @@
 #return-home {
     position: absolute;
     /* float: right; */
-    right: 0;
+    left: 0;
     
     font-size: 2.25vh;
     line-height: 5vh;
