@@ -1,4 +1,4 @@
-#remove-popup {
+.-one-button-popup {
     display: block;
     position: absolute;
 
@@ -19,7 +19,7 @@
     display: none;
 }
 
-#remove-popup .-remove {
+.-one-button-popup .-remove {
     position: absolute;
     width: 85%;
     left: 7.5%;

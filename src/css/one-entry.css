@@ -1,4 +1,4 @@
-#create-new-popup {
+.-one-entry-popup {
     display: block;
     position: absolute;
     color: white;
@@ -21,7 +21,7 @@
     display: none;
 }
 
-#create-new-popup .-title {
+.-one-entry-popup .-title {
     position: absolute;
 
     text-align: center;
@@ -32,7 +32,7 @@
     font-size: 2.5vmin;
 }
 
-#create-new-popup .-search-bar {
+.-one-entry-popup .-search-bar {
     position: absolute;
     
     width: 50%;

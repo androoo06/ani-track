@@ -5,9 +5,8 @@
 @import url(wheel.css);
 @import url(history.css);
 @import url(role.css);
-@import url(remove.css);
-@import url(create.css);
-@import url(rating.css);
+@import url(one-button.css);
+@import url(one-entry.css);
 
 :root {
     --bg-color: #191d23;
