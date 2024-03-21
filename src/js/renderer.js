@@ -69,13 +69,10 @@ function openAsPopup(element) {
 }
 
 $(".collapsible").on("click", (event) => {
-    if ($(event.target).is("input")) {
+    if ($(event.target).is("input") || $(event.target).hasClass("collap-right")) {
         return
     }
-
-    // add check to make sure it's not a child element thats being clicked
-    // either, ONLY the "left" classed elements (not "hidden")
-
+    
     let collapsible = $(event.target).closest(".collapsible")
     let hidden = collapsible.find(".hidden")
     let svg = collapsible.find(".left").find("span")
