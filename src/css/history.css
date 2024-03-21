@@ -23,4 +23,6 @@
 
 .-select-content input {
     width: 25%;
+    border-radius: 2px 2px 2px 2px;
+    text-align: center;
 }

@@ -16,6 +16,12 @@ function switchTab(event) {
     
     openTab = newTab
 
+    if (newTab == "home") {
+        $(`#return-home`).addClass("hidden")
+    } else {
+        $(`#return-home`).removeClass("hidden")
+    }
+
     $('#title')[0].childNodes[0].nodeValue = newTabDisplay
 }
 
@@ -56,8 +62,7 @@ $(".collapsible").on("click", (event) => {
 
 $(".switch-tab").on("click", switchTab)
 
-let a = document.getElementById("a")
-$(a).on("click", () => {
+$("#return-home").on("click", () => {
     switchTab({"target": $("#go-home")[0]})
 })
 

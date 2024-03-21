@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog, ipcMain, globalShortcut } = require('electron')
+const { app, BrowserWindow, ipcMain, globalShortcut } = require('electron')
 const { autoUpdater } = require("electron-updater")
 const db = require("./dbManager")
 
@@ -23,6 +23,10 @@ const createWindow = () => {
         return
     }
 
+    globalShortcut.register('f9', () => {
+        root.webContents.openDevTools()
+    })
+
     root = new BrowserWindow({
         webPreferences: {
             nodeIntegration: true,
@@ -31,8 +35,6 @@ const createWindow = () => {
     })
 
     root.webContents.once('dom-ready', () => {
-        root.webContents.openDevTools() // for the console stuff
-        
         sendVersion()
         db.init()
     })
