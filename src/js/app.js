@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, globalShortcut, shell } = require('electron')
 const { autoUpdater } = require("electron-updater")
 const db = require("./dbManager")
+const anilist = require("./anilist")
 const path = require('path')
 
 let projectRoot = path.dirname(__dirname).replace("app.asar", "")
@@ -52,8 +53,16 @@ const createWindow = () => {
 
 app.whenReady().then(createWindow)
 
-// auto updater
+// bridge renderer to anilist
+ipcMain.handle("search-anilist", async (_, _str) => {
+    return await anilist.search(_str)
+})
 
+ipcMain.handle("anilist-specific", async (_, id) => {
+    return await anilist.getSuperSpecifics(id)
+})
+
+// auto updater
 autoUpdater.allowPrerelease = false
 autoUpdater.allowDowngrade = false
 

@@ -64,6 +64,8 @@
     border: none;
 
     z-index: 3;
+
+    filter: invert();
 }
 
 #anime-popup img {
