@@ -20,14 +20,13 @@
         <div class="-rating-window">
             <div style="float: left;">
                 <div>
-                    <span style="color: #d7d5d5b1; padding-left: 2%;">Unrated</span>
+                    <span id="rated-label" style="color: #d7d5d5b1; padding-left: 2%;">Unrated</span>
                     <span class="-rating hidden">
                         10★
                     </span>
                 </div>
             </div>
             
-
             <div class="-rating">
                 <input type="checkbox">
                 Completed
@@ -129,6 +128,12 @@
         <button class="popup-exit" style="background: url(assets/media/x.svg);"></button>
         <div class="-title">RATE THIS ANIME</div>
         <input class="-search-bar" type="text" placeholder="Enter star rating out of 10" name="search">
+    </div>
+
+    <div id="manage-popup" class="--popup">
+        <button class="popup-exit" style="background: url(assets/media/x.svg);"></button>
+        <button class="btn-style">VIEW </button>
+        <button class="btn-style" style="bottom: 0;">REMOVE</button>
     </div>
 
     <div id="main">
