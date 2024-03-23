@@ -22,8 +22,27 @@ function peek(arr) {
     return arr[arr.length - 1]
 }
 
-function loadManage(event) {
-    
+async function getAll(tabName) {
+    let html = ""
+    let rows = await ipcRenderer.invoke("select", {"tab": tabName.trim()})
+    rows.forEach((row) => {
+        html += `
+                <div class="list-tab no-highlight" style="color: #d7d5d5b1;">${row.name.toUpperCase()}</div>`
+    })
+    return html
+}
+
+function loadManageTab(tabName) {
+    let html = `
+        <div class="list-tab">
+            <div class="block" style="padding-left: 11.5%; width: 50%;">
+                <button id="add-item" class="manage-btn-style btn-style">ADD</button>
+            </div>
+        </div>
+    `
+
+    html += getAll(tabName)
+    $("#manage-tab").html(html)
 }
 
 function switchTab(event, manage = false) {
@@ -36,7 +55,7 @@ function switchTab(event, manage = false) {
         newTabDisplay = `MANAGE ${event}`
         newTab = "manage-tab"
         managing = event
-        loadManage(event)
+        loadManageTab(event)
     }
 
     $(`#${newTab}`).toggleClass("hidden")
@@ -159,7 +178,7 @@ $(".popup-exit").on("click", (event) => {
 })
 
 $(".manage-btn").on("click", (event) => {
-    let title = $(event.target).closest(".list-tab").find(".collapsible").find(".left-c1").text()
+    let title = $(event.target).closest(".list-tab").find(".collapsible").find(".left-c1").text().trim()
     switchTab(title, manage = true)
 })
 
@@ -178,21 +197,23 @@ $("#create-new-popup").find(".-search-bar").on("keypress", function (e) {
     let args = {
         "tab": managing.trim(),
         "name": name,
+        "callback": (err, response) => {
+            console.log(err, response)
+
+            if (err) {
+                console.log("error:", err)
+            } else {
+                let el = document.createElement('div')
+                el.addEventListener("click", openAnime)
+    
+                $(el).addClass("list-tab")
+                $(el).text(name.toUpperCase())
+                $(el).appendTo("#manage-tab")
+            }
+        }
     }
 
-    ipcRenderer.invoke("create-new", args).then(response => {
-        if (response) {
-            // error i think
-            console.log(response)
-        } else {
-            let el = document.createElement('div')
-            el.addEventListener("click", openAnime)
-
-            $(el).addClass("list-tab")
-            $(el).text(name.toUpperCase())
-            $(el).appendTo("#manage-tab")
-        }
-    })
+    ipcRenderer.send("create-new", args)
 })
 
 $("#search-popup").find(".-search-bar").on("keypress", async function (e) {
@@ -223,4 +244,9 @@ $("#search-popup").find(".-search-bar").on("keypress", async function (e) {
     let svg = collapsible.find(".left").find("span")
 
     toggleCollapsible(svg, hidden, true)
+})
+
+// load data when app launches
+$(async function () {
+    $("#watchlists-content").html(`<br>${await getAll("Watchlists")}`)
 })

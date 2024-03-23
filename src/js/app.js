@@ -30,8 +30,6 @@ const createWindow = () => {
     root.webContents.once('dom-ready', async () => {
         sendVersion()
         db.init()
-
-        console.log(await db.queries.select())
     })
 
     root.on('close', function (e) {
@@ -56,8 +54,12 @@ const createWindow = () => {
 app.whenReady().then(createWindow)
 
 // bridge renderer to database
-ipcMain.handle("create-new", async (_, args) => {
-    return await db.queries['create-new'](args)
+ipcMain.handle("select", async (_, args) => {
+    return await db.queries.select(args)
+})
+
+ipcMain.on("create-new", (_, args) => {
+    db.queries['create-new'](args)
 })
 
 // bridge renderer to anilist

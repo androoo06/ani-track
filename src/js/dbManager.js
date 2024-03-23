@@ -40,28 +40,23 @@ module.exports.close = function() {
 }
 
 module.exports.queries = {
-    "create-new": async function(args) {
+    "create-new": function(args) {
         let table = args.tab.slice(0, -1)
-        console.log(table)
 
-        let data
-        await db.run(`INSERT INTO ${table} (name) VALUES (${args.name});`, (response) => {
-            data = response
-        })
-
-        return data
+        db.run(`INSERT INTO ${table} (name) VALUES (${args.name})`)
     },
 
-    "select": async function (args) {
-        let data
-        await db.get(`SELECT * FROM Watchlist;`, (err, response) => {
-            if (err) {
-                console.log("error:", err)
-            } else {
-                data = response
-            }
-        })
+    "select": function (args) {
+        let table = args.tab.slice(0, -1)
 
-        return data
+        return new Promise((resolve, reject) => {
+            db.all(`SELECT * FROM ${table}`, (err, row) => {
+                if (!err) {
+                    resolve(row)
+                } else {
+                    reject(err)
+                }
+            })
+        })
     }
 }
