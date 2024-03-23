@@ -1,4 +1,5 @@
 const { ipcRenderer } = require("electron");
+const { event } = require("jquery");
 window.$ = window.jQuery = require('../node_modules/jquery/dist/jquery.min.js');
 
 ipcRenderer.on("version", (_, ver) => {
@@ -6,6 +7,7 @@ ipcRenderer.on("version", (_, ver) => {
 })
 
 let openTab = "home"
+let managing = ""
 let popups = [] // emulate a stack
 let __openClickFlag = false
 
@@ -20,14 +22,21 @@ function peek(arr) {
     return arr[arr.length - 1]
 }
 
+function loadManage(event) {
+    
+}
+
 function switchTab(event, manage = false) {
     let newTab, newTabDisplay
     if (manage == false) {
         newTabDisplay = $(event.target).text().trim()
         newTab = newTabDisplay.replace(" ", "-").toLowerCase()
+        managing = ""
     } else {
         newTabDisplay = `MANAGE ${event}`
         newTab = "manage-tab"
+        managing = event
+        loadManage(event)
     }
 
     $(`#${newTab}`).toggleClass("hidden")
@@ -162,6 +171,30 @@ $(".-addrole").on("click", () => {
     openAsPopup($("#role-popup")[0])
 })
 
+$("#create-new-popup").find(".-search-bar").on("keypress", function (e) {
+    if (!hitEnter(e)) return
+    let name = `${$("#create-new-popup").find(".-search-bar").val()}`
+
+    let args = {
+        "tab": managing.trim(),
+        "name": name,
+    }
+
+    ipcRenderer.invoke("create-new", args).then(response => {
+        if (response) {
+            // error i think
+            console.log(response)
+        } else {
+            let el = document.createElement('div')
+            el.addEventListener("click", openAnime)
+
+            $(el).addClass("list-tab")
+            $(el).text(name.toUpperCase())
+            $(el).appendTo("#manage-tab")
+        }
+    })
+})
+
 $("#search-popup").find(".-search-bar").on("keypress", async function (e) {
     if (!hitEnter(e)) return
     let params = `${$("#search-popup").find(".-search-bar").val()}`
@@ -178,7 +211,7 @@ $("#search-popup").find(".-search-bar").on("keypress", async function (e) {
 
     // fill list with searched result titles
     data.forEach(media => {
-        el = document.createElement('div')
+        let el = document.createElement('div')
         el.addEventListener("click", openAnime)
         el.id = media.id
         $(el).html(media.title)

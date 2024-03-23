@@ -27,9 +27,11 @@ const createWindow = () => {
         },
     })
 
-    root.webContents.once('dom-ready', () => {
+    root.webContents.once('dom-ready', async () => {
         sendVersion()
         db.init()
+
+        console.log(await db.queries.select())
     })
 
     root.on('close', function (e) {
@@ -52,6 +54,11 @@ const createWindow = () => {
 }
 
 app.whenReady().then(createWindow)
+
+// bridge renderer to database
+ipcMain.handle("create-new", async (_, args) => {
+    return await db.queries['create-new'](args)
+})
 
 // bridge renderer to anilist
 ipcMain.handle("search-anilist", async (_, _str) => {
