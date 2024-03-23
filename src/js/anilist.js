@@ -11,7 +11,7 @@ async function getSuperSpecifics(id) {
     return {
         "title": data.title.english || data.title.native,
         "description": data.description,
-        "image": data.coverImage.small,
+        "image": data.coverImage.large,
 
         "genres": data.genres,
     }

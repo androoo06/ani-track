@@ -34,14 +34,25 @@
     color: white;
 }
 
-#anime-popup input {
+.-rating-window div {
+    height: 7vh;
+    line-height: 7vh;
+    font-size: 4vh;
+    width: 100%;
+    top: 0;
+    /* background-color: red; */
     position: absolute;
-    height: 50%;
-    top: 25%;
+}
 
-    left: 90%;
-    right: 0px;
-    z-index: 3;
+.-rating-window .-rating {
+    min-width: 25%;
+    /* background-color: blue; */
+    right: 0;
+    text-align: right;
+}
+
+.-rating-window .-rating input {
+    height: 3vh;
 }
 
 #anime-popup .-desc {
@@ -52,6 +63,16 @@
     /* background-color: blue; */
 
     overflow: auto;
+}
+
+#anime-popup .-rating-window {
+    position: absolute;
+    top: 8vh;
+    height: 7vh;
+    width: 80%;
+
+    z-index: 3;
+    /* background-color: aqua; */
 }
 
 .popup-exit {
@@ -82,9 +103,9 @@
 
 #anime-popup table {
     position: absolute;
-    /* background-color: blue; */
+    /* background-color: yellow; */
     width: 75%;
-    height: 50%;
+    height: 35%;
     bottom: 35%;
 
     border-collapse: collapse;
@@ -108,9 +129,11 @@
 
     position: absolute;
 
-    font-size: 3.25vh;
+    font-size: 3vh;
     height: 15%;
     line-height: 4vh;
+
+    z-index: 10;
 }
 
 #anime-popup .-select-content {
@@ -154,11 +177,6 @@
 #anime-popup .-half {
     width: 50%;
     /* background-color: red; */
-}
-
-#anime-popup .-small{
-    font-size: 3vw;
-    color: #d7d5d5b1;
 }
 
 /* .-rating {
