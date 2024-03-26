@@ -1,14 +1,11 @@
 const { ipcRenderer } = require("electron");
-const { event } = require("jquery");
 window.$ = window.jQuery = require('../node_modules/jquery/dist/jquery.min.js');
 
 ipcRenderer.on("version", (_, ver) => {
     $("#version").text(`v${ver}`)
 })
 
-let openTab = "home"
-let managing = ""
-let popups = [] // emulate a stack
+let popups = [] // emulate a stack for layered popups
 let __openClickFlag = false
 
 function hitEnter(e) {
@@ -26,42 +23,16 @@ async function getAll(tabName) {
     let html = ""
     let rows = await ipcRenderer.invoke("select", {"tab": tabName.trim()})
     rows.forEach((row) => {
-        html += `
-                <div class="list-tab no-highlight" style="color: #d7d5d5b1;">${row.name.toUpperCase()}</div>`
+        html += `<div class="list-tab no-highlight --view-watchlist" style="color: #d7d5d5b1;">${row.name.toUpperCase()}</div>`
     })
     return html
 }
 
-function loadManageTab(tabName) {
-    let html = `
-        <div class="list-tab">
-            <div class="block" style="padding-left: 11.5%; width: 50%;">
-                <button id="add-item" class="manage-btn-style btn-style">ADD</button>
-            </div>
-        </div>
-    `
+function switchTab(newTabDisplay) {
+    let newTab = newTabDisplay.replace(" ", "-").toLowerCase()
 
-    html += getAll(tabName)
-    $("#manage-tab").html(html)
-}
-
-function switchTab(event, manage = false) {
-    let newTab, newTabDisplay
-    if (manage == false) {
-        newTabDisplay = $(event.target).text().trim()
-        newTab = newTabDisplay.replace(" ", "-").toLowerCase()
-        managing = ""
-    } else {
-        newTabDisplay = `MANAGE ${event}`
-        newTab = "manage-tab"
-        managing = event
-        loadManageTab(event)
-    }
-
-    $(`#${newTab}`).toggleClass("hidden")
-    $(`#${openTab}`).toggleClass("hidden")
-
-    openTab = newTab
+    $(`#${newTab}`).removeClass("hidden")
+    $(`.tab:not(#${newTab})`).addClass("hidden")
 
     if (newTab == "home") {
         $(`#return-home`).addClass("hidden")
@@ -69,6 +40,7 @@ function switchTab(event, manage = false) {
         $(`#return-home`).removeClass("hidden")
     }
 
+    // change the text without overwriting the button HTML
     $('#title')[0].childNodes[0].nodeValue = newTabDisplay
 }
 
@@ -163,10 +135,13 @@ $(".collapsible").on("click", (event) => {
     }
 })
 
-$(".switch-tab").on("click", switchTab)
+$(".switch-tab").on("click", (event) => {
+    let newTabDisplay = $(event.target).text().trim()
+    switchTab(newTabDisplay)
+})
 
 $("#return-home").on("click", () => {
-    switchTab({ "target": $("#go-home")[0] })
+    switchTab("HOME")
 })
 
 $(".-search-anime-button").on("click", () => {
@@ -179,7 +154,12 @@ $(".popup-exit").on("click", (event) => {
 
 $(".manage-btn").on("click", (event) => {
     let title = $(event.target).closest(".list-tab").find(".collapsible").find(".left-c1").text().trim()
-    switchTab(title, manage = true)
+
+    $(`#manage-${title.toLowerCase()}`).removeClass("hidden")
+    $(`.--manage-tab:not(#manage-${title.toLowerCase()})`).addClass("hidden")
+
+    switchTab("Manage Tab")
+    $('#title')[0].childNodes[0].nodeValue = `Manage ${title}`
 })
 
 $("#add-item").on("click", () => {
@@ -204,11 +184,14 @@ $("#create-new-popup").find(".-search-bar").on("keypress", function (e) {
                 console.log("error:", err)
             } else {
                 let el = document.createElement('div')
-                el.addEventListener("click", openAnime)
+                // el.addEventListener("click", openWatchlist)
     
                 $(el).addClass("list-tab")
                 $(el).text(name.toUpperCase())
                 $(el).appendTo("#manage-tab")
+
+                // add to homepage
+                $(el).appendTo(`#${managing.toLowerCase().trim()}-content`)
             }
         }
     }
@@ -234,6 +217,7 @@ $("#search-popup").find(".-search-bar").on("keypress", async function (e) {
     data.forEach(media => {
         let el = document.createElement('div')
         el.addEventListener("click", openAnime)
+
         el.id = media.id
         $(el).html(media.title)
         $(el).appendTo(content)
@@ -246,7 +230,21 @@ $("#search-popup").find(".-search-bar").on("keypress", async function (e) {
     toggleCollapsible(svg, hidden, true)
 })
 
+$(document).on("click", ".--view-watchlist", function(){
+    __openClickFlag = true
+    switchTab("View Watchlist")
+
+    $('#title')[0].childNodes[0].nodeValue = `Viewing ${$(this).text()}`
+})
+
 // load data when app launches
 $(async function () {
-    $("#watchlists-content").html(`<br>${await getAll("Watchlists")}`)
+    // load each manage tab
+    (["watchlists", "tags", "recommenders"]).forEach(async (tabName) => {
+        let html = await getAll(tabName)
+        $(`#manage-${tabName}`).html(html)
+        $(`#${tabName}-content`).html(`<br>${html}`)
+    })
+
+
 })
