@@ -35,5 +35,10 @@ async function searchAnime(_str) {
     return ret
 }
 
-module.exports.search = searchAnime
-module.exports.getSuperSpecifics = getSuperSpecifics
+module.exports.handleQuery = async function(_, channel, arg) {
+    if (channel == "search") {
+        return await searchAnime(arg)
+    } else if (channel == "specifics") {
+        return await getSuperSpecifics(arg)
+    }
+}

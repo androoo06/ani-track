@@ -92,8 +92,8 @@
 #anime-popup img {
     position: absolute;
     /* background-color: red; */
-    aspect-ratio: 1;
-    width: 30vmin;
+    aspect-ratio: 0.7;
+    width: 20vmin;
     right: 0;
     border: none;
     margin: 0;

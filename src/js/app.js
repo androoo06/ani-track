@@ -54,22 +54,11 @@ const createWindow = () => {
 app.whenReady().then(createWindow)
 
 // bridge renderer to database
-ipcMain.handle("select", async (_, args) => {
-    return await db.queries.select(args)
-})
-
-ipcMain.on("create-new", (_, args) => {
-    db.queries['create-new'](args)
-})
+ipcMain.handle("queryDB", db.handleQuery)
 
 // bridge renderer to anilist
-ipcMain.handle("search-anilist", async (_, _str) => {
-    return await anilist.search(_str)
-})
+ipcMain.handle("queryAnilist", anilist.handleQuery)
 
-ipcMain.handle("anilist-specific", async (_, id) => {
-    return await anilist.getSuperSpecifics(id)
-})
 
 // auto updater
 autoUpdater.allowPrerelease = false

@@ -71,7 +71,7 @@
         <button class="popup-exit" style="background: url(assets/media/x.svg);"></button>
         <div class="-title">SEARCH</div>
         <input class="-search-bar" type="text" placeholder="Search Anime Title" name="search">
-        <div class="tab">
+        <div>
             <div class="list-tab no-highlight" style="width: 90%; left: 5%;">
                 <div class="collapsible" style="width: 90%">
                     <div class="left">
@@ -94,10 +94,10 @@
         <div class="-sub-title">WHEEL SPIN RESULT</div>
         <br>
         <div class="list-tab">
-            <button class="block btn-style wheel-btn">REROLL</button>
+            <button id="reroll-anime" class="block btn-style wheel-btn">REROLL</button>
         </div>
         <div class="list-tab">
-            <button class="block btn-style wheel-btn">START ANIME</button>
+            <button id="start-anime" class="block btn-style wheel-btn">START ANIME</button>
         </div>
         <br>
     </div>
@@ -304,13 +304,18 @@
                         <button id="spin-wheel" class="manage-btn-style btn-style">SPIN</button>
                     </div>
                     <div class="block">WHEEL</div>
-                    <div id="wheel-container">
+                    <div id="wheel-container" class="hidden">
                         <div class="wheel" id="wheel">
                             <div id="wheel-center"></div>
                         </div>
                         <div class="wheel">
                             <div id="wheel-arrow" style="background: url(assets/media/wheeltick.svg);"></div>
                         </div>
+                    </div>
+                    <div style="text-align: center; color:#d7d5d5b1" id="not-enough-anime">
+                        <br>
+                        <br>
+                        You need at least 3 anime on this watchlist to spin the wheel.
                     </div>
                 </div>
             </div>

@@ -39,24 +39,59 @@ module.exports.close = function() {
     })
 }
 
-module.exports.queries = {
-    "create-new": function(args) {
-        let table = args.tab.slice(0, -1)
-
-        db.run(`INSERT INTO ${table} (name) VALUES (${args.name})`)
+let queries = {
+    "get": {
+        "id": `SELECT (id) FROM [table] WHERE (name = "[name]")`,
+        "all": "SELECT * FROM [table]",
+        "all-except": "SELECT * FROM [table] EXCEPT (SELECT * FROM [table-content] WHERE (animeId = [animeId]))",
+        "content": "SELECT A.* from Anime A, [table] t WHERE ((A.id = t.animeId) AND (t.id = [tableId]))",
+        "watching": "SELECT (id) FROM Anime WHERE (watching = 1)",
+        "filtered": "SELECT A.* from Anime A [filterProperties]"
     },
 
-    "select": function (args) {
-        let table = args.tab.slice(0, -1)
+    "insert": {
+        "element": `INSERT INTO [table] (name) VALUES ("[name]")`,
+        "anime": "INSERT INTO Anime (id) VALUES ([animeId])",
+        "content": "INSERT INTO [table-content] (id, animeId) VALUES ([id], [animeId])"
+    },
 
+    "ud": {
+        "update": "UPDATE Anime SET ([property] = [value]) WHERE (id = [animeId])",
+        "delete": "DELETE FROM [table] WHERE (id = [elementId])"
+    }
+}
+
+function replaceQuery(q, args) {
+    let nQ = (' ' + q).slice(1) // hacky way to copy str
+    for (const [key, value] of Object.entries(args)) {
+        nQ = nQ.replace(`[${key}]`, value)
+    }
+
+    if (nQ.search("\\[") != -1) return "$Error$"
+
+    return nQ
+}
+
+module.exports.handleQuery = async function(_, channel, query, args) {
+    let updatedQuery = replaceQuery(queries[channel][query], args)
+
+    if (updatedQuery == "$Error$") {
+        console.log("CANNOT RUN QUERY: INCOMPATIBLE ARGUMENTS")
+        console.log("REQUESTED QUERY: ", queries[channel][query])
+        return
+    }
+
+    if (channel == "get") {
         return new Promise((resolve, reject) => {
-            db.all(`SELECT * FROM ${table}`, (err, row) => {
+            db.all(updatedQuery, (err, rows) => {
                 if (!err) {
-                    resolve(row)
+                    resolve(rows)
                 } else {
                     reject(err)
                 }
             })
         })
+    } else {
+        db.run(updatedQuery)
     }
 }

@@ -22,11 +22,15 @@ function unitVector(x, y) {
 }
 
 function spin() {
+    if ($("#wheel").children().length < 7 ) {
+        return
+    }
+
     $("#wheel").removeClass("spinning")
     $("#wheel").css("transform", "rotate(0deg)")
 
-    var x = 5555; //min value
-    var y = 9999; // max value
+    var x = 1111*5; //min value
+    var y = 9999*5; // max value
 
     var deg = Math.floor(Math.random() * (x - y)) + y;
 
@@ -35,21 +39,39 @@ function spin() {
         $("#wheel").css("transform", "rotate(" + deg + "deg)");
     }, 150)
 
-    let c = 12
-    let inc = 360/12
+    let c = Math.floor($("#wheel").children().length/2)
+    let inc = 360/c
     let startNum = c-1
 
     // console.log(Math.floor(deg/inc), Math.floor(deg/inc)%c, inc)
+    // console.log(startNum - Math.floor(deg/inc))
     let victor = (startNum - Math.floor(deg/inc) + (c * y)) % c
-    // console.log("VICTOR:", victor)
 
+    setTimeout(()=>{
+        let txtId = 2 + (2 * victor)
+        let txt = $($("#wheel").children()[txtId]).text()
+        $("#wheel-popup").find(".-sub-title").text(txt)
+        
+        openAsPopup($("#wheel-popup")[0])
+    }, 11000)
 }
 
-function fillWheel() {
-    let c = 12
+function fillWheel(contents) {
+    $("#wheel").html(`<div id="wheel-center"></div>`)
 
-    let inc = 360 / c
-    for (let i = 0; i < c; i++) {
+    if (contents.length >= 3) {
+        $("#wheel-container").removeClass("hidden")
+        $("#not-enough-anime").addClass("hidden")
+    } else {
+        $("#wheel-container").addClass("hidden")
+        $("#not-enough-anime").removeClass("hidden")
+        return
+    }
+
+    let inc = 360 / contents.length
+    let i = 0
+
+    contents.forEach(anime => {
         let mid = ((inc * i) + (inc * (i + 1))) / 2
 
         let rad = degreesToRadians(inc * i)
@@ -71,14 +93,20 @@ function fillWheel() {
                         background-color: ${colors[i % colors.length]};">
                     </span>
                     <span class="abs wheel-word-box" style="left: ${xy3[0] - (sx * subScalar)}%; top: ${xy3[1] - (sy * subScalar) - 8.25}%; transform: rotate(${(inc / 2) + (i * inc)}deg); color: ${textColors[i % textColors.length]};">
-                        ${i}
+                        ${anime}
                     </span>
                 `
 
         $("#wheel")[0].innerHTML += span
-    } 
+        i++;
+    }) 
 }
 
-fillWheel()
+// fillWheel(["0a", "1b", "2c"])
 
 $("#spin-wheel").on("click", spin)
+
+$("#reroll-anime").on("click", () => {
+    closePopup($("#wheel-popup"))
+    spin()
+})

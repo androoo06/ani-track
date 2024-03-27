@@ -7,6 +7,7 @@ ipcRenderer.on("version", (_, ver) => {
 
 let popups = [] // emulate a stack for layered popups
 let __openClickFlag = false
+let managing = ""
 
 function hitEnter(e) {
     if (!e) e = window.event
@@ -20,12 +21,12 @@ function peek(arr) {
 }
 
 async function getAll(tabName) {
-    let html = ""
-    let rows = await ipcRenderer.invoke("select", {"tab": tabName.trim()})
-    rows.forEach((row) => {
-        html += `<div class="list-tab no-highlight --view-watchlist" style="color: #d7d5d5b1;">${row.name.toUpperCase()}</div>`
-    })
-    return html
+    let args = {
+        "table": tabName.trim().slice(0, -1)
+    }
+
+    let d = await ipcRenderer.invoke("queryDB", "get", "all", args)
+    return d
 }
 
 function switchTab(newTabDisplay) {
@@ -41,6 +42,7 @@ function switchTab(newTabDisplay) {
     }
 
     // change the text without overwriting the button HTML
+    managing = ""
     $('#title')[0].childNodes[0].nodeValue = newTabDisplay
 }
 
@@ -90,7 +92,7 @@ async function openAnime(event) {
     let animeId = parseInt(event.target.id)
 
     let data
-    await ipcRenderer.invoke("anilist-specific", animeId).then(response => {
+    await ipcRenderer.invoke("queryAnilist", "specifics", animeId).then(response => {
         data = response
     })
 
@@ -119,20 +121,22 @@ $(".collapsible").on("click", (event) => {
     }
 
     // hacky workaround to event bubbling
-    if (__openClickFlag) {
-        __openClickFlag = false
-        return
-    }
-
-    let collapsible = $(event.target).closest(".collapsible")
-    let hidden = collapsible.find(".hidden")
-    let svg = collapsible.find(".left").find("span")
-
-    if (svg.css("transform") == "matrix(-1, 0, 0, -1, 0, 0)") {
-        toggleCollapsible(svg, hidden, true)
-    } else {
-        toggleCollapsible(svg, hidden, false)
-    }
+    setTimeout(()=> {
+        if (__openClickFlag) {
+            __openClickFlag = false
+            return
+        }
+    
+        let collapsible = $(event.target).closest(".collapsible")
+        let hidden = collapsible.find(".hidden")
+        let svg = collapsible.find(".left").find("span")
+    
+        if (svg.css("transform") == "matrix(-1, 0, 0, -1, 0, 0)") {
+            toggleCollapsible(svg, hidden, true)
+        } else {
+            toggleCollapsible(svg, hidden, false)
+        }
+    }, 125)
 })
 
 $(".switch-tab").on("click", (event) => {
@@ -153,6 +157,7 @@ $(".popup-exit").on("click", (event) => {
 })
 
 $(".manage-btn").on("click", (event) => {
+    __openClickFlag = true
     let title = $(event.target).closest(".list-tab").find(".collapsible").find(".left-c1").text().trim()
 
     $(`#manage-${title.toLowerCase()}`).removeClass("hidden")
@@ -160,43 +165,57 @@ $(".manage-btn").on("click", (event) => {
 
     switchTab("Manage Tab")
     $('#title')[0].childNodes[0].nodeValue = `Manage ${title}`
+
+    console.log(title)
+    managing = title
 })
 
 $("#add-item").on("click", () => {
     openAsPopup($("#create-new-popup")[0])
 })
 
-$(".-addrole").on("click", () => {
+$(".-addrole").on("click", async (event) => {
     openAsPopup($("#role-popup")[0])
+
+    // load the popup with clickables
+    let tbl = $(event.target).parent().parent().parent().find(".-select-title")[0].childNodes[0].nodeValue.trim().toLowerCase()
+    // let content = $(event.target).parent().parent().parent().find(".-select-content")[0]
+    
+    if (tbl == "lists") tbl = "watchlists"
+
+    let html = ""
+    let rows = await getAll(tbl)
+
+    rows.forEach((row) => {
+        let n = row.name.toUpperCase()
+        html += `<div class="-selectable no-highlight -addrole-internal" id="${tbl}$separator$${n}">${n}</div>`
+    })
+
+    $("#role-popup").find(".-content").html(html)
 })
 
-$("#create-new-popup").find(".-search-bar").on("keypress", function (e) {
+$("#create-new-popup").find(".-search-bar").on("keypress", async function (e) {
+    console.log('a')
+
     if (!hitEnter(e)) return
     let name = `${$("#create-new-popup").find(".-search-bar").val()}`
 
+    console.log('b')
+
     let args = {
         "tab": managing.trim(),
-        "name": name,
-        "callback": (err, response) => {
-            console.log(err, response)
-
-            if (err) {
-                console.log("error:", err)
-            } else {
-                let el = document.createElement('div')
-                // el.addEventListener("click", openWatchlist)
-    
-                $(el).addClass("list-tab")
-                $(el).text(name.toUpperCase())
-                $(el).appendTo("#manage-tab")
-
-                // add to homepage
-                $(el).appendTo(`#${managing.toLowerCase().trim()}-content`)
-            }
-        }
+        "name": name
     }
 
-    ipcRenderer.send("create-new", args)
+    console.log("c", args)
+    await ipcRenderer.invoke("queryDB", "create-new", args)
+    console.log("d")
+
+    let tab = `<div class="list-tab no-highlight --view-watchlist" style="color: #d7d5d5b1;">${name.toUpperCase()}</div>`
+
+    // add to homepage, manage tab
+    $("#manage-tab")[0].innerHTML += tab
+    $(`#${managing.toLowerCase().trim()}-content`)[0].innerHTML += tab
 })
 
 $("#search-popup").find(".-search-bar").on("keypress", async function (e) {
@@ -206,7 +225,7 @@ $("#search-popup").find(".-search-bar").on("keypress", async function (e) {
     if (params.trim() == "") return
 
     let data
-    await ipcRenderer.invoke("search-anilist", params).then(response => {
+    await ipcRenderer.invoke("queryAnilist", "search", params).then(response => {
         data = response
     })
 
@@ -230,6 +249,10 @@ $("#search-popup").find(".-search-bar").on("keypress", async function (e) {
     toggleCollapsible(svg, hidden, true)
 })
 
+$(document).on("click", ".-addrole-internal", function(event){
+    console.log(event.target.id)
+})
+
 $(document).on("click", ".--view-watchlist", function(){
     __openClickFlag = true
     switchTab("View Watchlist")
@@ -240,8 +263,16 @@ $(document).on("click", ".--view-watchlist", function(){
 // load data when app launches
 $(async function () {
     // load each manage tab
+
     (["watchlists", "tags", "recommenders"]).forEach(async (tabName) => {
-        let html = await getAll(tabName)
+        let classes = (tabName == "watchlists") ? `--view-watchlist` : ""
+
+        let html = ""
+        let rows = await getAll(tabName, classes)
+        rows.forEach((row) => {
+            html += `<div class="list-tab no-highlight ${classes}" style="color: #d7d5d5b1;">${row.name.toUpperCase()}</div>`
+        })
+
         $(`#manage-${tabName}`).html(html)
         $(`#${tabName}-content`).html(`<br>${html}`)
     })
