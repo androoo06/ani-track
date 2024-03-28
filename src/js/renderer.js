@@ -101,6 +101,7 @@ async function openAnime(event) {
     $(popup).find(".-title-disp").text(data.title)
     $(popup).find(".-desc").html(data.description)
     $(popup).find("img").attr('src', data.image)
+    $(popup).data("animeId", animeId)
 
     let genresHTML = ""
     data.genres.forEach(genre => {
@@ -109,7 +110,7 @@ async function openAnime(event) {
                 <button class="-de-select">${genre}</button>
             </div>\n`
     })
-    $(popup).find("table").find(".genres-box").find(".-select-content").html(genresHTML)
+    $("#genre-box").find(".-select-content").html(genresHTML)
 
     // open
     openAsPopup(popup)
@@ -175,41 +176,69 @@ $("#add-item").on("click", () => {
 })
 
 $(".-addrole").on("click", async (event) => {
+    console.log("opening popup????")
     openAsPopup($("#role-popup")[0])
 
     // load the popup with clickables
-    let tbl = $(event.target).parent().parent().parent().find(".-select-title")[0].childNodes[0].nodeValue.trim().toLowerCase()
-    // let content = $(event.target).parent().parent().parent().find(".-select-content")[0]
-    
-    if (tbl == "lists") tbl = "watchlists"
+    let tbl = $(event.target).parent().parent().parent().find(".-select-title")[0].childNodes[0].nodeValue.trim().toLowerCase().slice(0, -1)
+
+    if (tbl == "list") tbl = "watchlist"
+
+    let args = {
+        "table": tbl,
+        "table-content": `${tbl}Content`,
+        "animeId": $("#anime-popup").data("animeId")
+    }
 
     let html = ""
-    let rows = await getAll(tbl)
+    let rows = await ipcRenderer.invoke("queryDB", "get", "all-except", args)
 
     rows.forEach((row) => {
         let n = row.name.toUpperCase()
-        html += `<div class="-selectable no-highlight -addrole-internal" id="${tbl}$separator$${n}">${n}</div>`
+        html += `<div class="-selectable no-highlight -addrole-internal" id="${tbl}$separator$${n}$separator$${row.id}$separator$${args.animeId}">${n}</div>`
     })
 
     $("#role-popup").find(".-content").html(html)
 })
 
-$("#create-new-popup").find(".-search-bar").on("keypress", async function (e) {
-    console.log('a')
+$(document).on("click", ".-addrole-internal", async function(event){
+    let [category, value, categoryId, animeId] = event.target.id.split("$separator$")
 
+    let args1 = {"animeId": animeId}
+    await ipcRenderer.invoke("queryDB", "insert", "anime", args1)
+    
+    let args2 = {
+        "table-content": `${category}Content`,
+        "id": categoryId,
+        "animeId": animeId
+    }
+
+    let data = await ipcRenderer.invoke("queryDB", "get", "exact", args2)
+    console.log(data)
+    if (data.length == 0) {
+        console.log("not found, adding")
+        await ipcRenderer.invoke("queryDB", "insert", "content", args2)
+    } else {
+        console.log("found, not adding")
+    }
+
+    let el = `<div class="-selection no-highlight -selection-hoverable">
+                  <button class="-de-select">${value}</button>
+              </div>`
+    $(`#${category}-box`).find(".-select-content")[0].innerHTML += el
+    closePopup($("#role-popup")[0])
+})
+
+$("#create-new-popup").find(".-search-bar").on("keypress", async function (e) {
     if (!hitEnter(e)) return
     let name = `${$("#create-new-popup").find(".-search-bar").val()}`
 
-    console.log('b')
-
     let args = {
-        "tab": managing.trim(),
+        "table": managing.trim().slice(0, -1),
         "name": name
     }
 
-    console.log("c", args)
-    await ipcRenderer.invoke("queryDB", "create-new", args)
-    console.log("d")
+    await ipcRenderer.invoke("queryDB", "insert", "element", args)
 
     let tab = `<div class="list-tab no-highlight --view-watchlist" style="color: #d7d5d5b1;">${name.toUpperCase()}</div>`
 
@@ -249,10 +278,6 @@ $("#search-popup").find(".-search-bar").on("keypress", async function (e) {
     toggleCollapsible(svg, hidden, true)
 })
 
-$(document).on("click", ".-addrole-internal", function(event){
-    console.log(event.target.id)
-})
-
 $(document).on("click", ".--view-watchlist", function(){
     __openClickFlag = true
     switchTab("View Watchlist")
@@ -268,7 +293,7 @@ $(async function () {
         let classes = (tabName == "watchlists") ? `--view-watchlist` : ""
 
         let html = ""
-        let rows = await getAll(tabName, classes)
+        let rows = await getAll(tabName)
         rows.forEach((row) => {
             html += `<div class="list-tab no-highlight ${classes}" style="color: #d7d5d5b1;">${row.name.toUpperCase()}</div>`
         })

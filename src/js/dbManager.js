@@ -21,13 +21,17 @@ module.exports.init = function() {
         // console.log(err)
     })
 
-    db = new sqlite3.Database(dsPath, sqlite3.OPEN_READWRITE, (err) => {
-        if (err) {
-            return console.error(err.message);
-        }
+    setTimeout(() => {
+        db = new sqlite3.Database(dsPath, sqlite3.OPEN_READWRITE, (err) => {
+            if (err) {
+                return console.error(err.message);
+            }
+        
+            console.log('Connected to DB')
+        })
     
-        console.log('Connected to DB')
-    })
+        db.get("PRAGMA foreign_keys = ON")
+    }, 0)   
 }
 
 module.exports.close = function() {
@@ -43,10 +47,11 @@ let queries = {
     "get": {
         "id": `SELECT (id) FROM [table] WHERE (name = "[name]")`,
         "all": "SELECT * FROM [table]",
-        "all-except": "SELECT * FROM [table] EXCEPT (SELECT * FROM [table-content] WHERE (animeId = [animeId]))",
+        "all-except": "SELECT * from [table] WHERE (SELECT t.id from [table] t EXCEPT SELECT tc.id FROM [table-content] tc WHERE (tc.animeId = [animeId]))",
         "content": "SELECT A.* from Anime A, [table] t WHERE ((A.id = t.animeId) AND (t.id = [tableId]))",
         "watching": "SELECT (id) FROM Anime WHERE (watching = 1)",
-        "filtered": "SELECT A.* from Anime A [filterProperties]"
+        "filtered": "SELECT A.* from Anime A [filterProperties]",
+        "exact": `SELECT * FROM [table-content] WHERE (id = [id]) AND (animeId = [animeId])`
     },
 
     "insert": {
@@ -64,10 +69,17 @@ let queries = {
 function replaceQuery(q, args) {
     let nQ = (' ' + q).slice(1) // hacky way to copy str
     for (const [key, value] of Object.entries(args)) {
-        nQ = nQ.replace(`[${key}]`, value)
+        nQ = nQ.replaceAll(`[${key}]`, value)
     }
 
-    if (nQ.search("\\[") != -1) return "$Error$"
+    if (nQ.search("\\[") != -1) {
+        console.log("--------------------------------")
+        console.log("CANNOT RUN QUERY: INCOMPATIBLE ARGUMENTS")
+        console.log("REQUESTED QUERY: ", q)
+        console.log("RESULT QUERY:", nQ)
+        console.log("--------------------------------")
+        return "$Error$"
+    }
 
     return nQ
 }
@@ -76,8 +88,6 @@ module.exports.handleQuery = async function(_, channel, query, args) {
     let updatedQuery = replaceQuery(queries[channel][query], args)
 
     if (updatedQuery == "$Error$") {
-        console.log("CANNOT RUN QUERY: INCOMPATIBLE ARGUMENTS")
-        console.log("REQUESTED QUERY: ", queries[channel][query])
         return
     }
 
@@ -92,6 +102,8 @@ module.exports.handleQuery = async function(_, channel, query, args) {
             })
         })
     } else {
-        db.run(updatedQuery)
+        try {
+            db.run(updatedQuery)
+        } catch (e) {console.log(e)}
     }
 }
