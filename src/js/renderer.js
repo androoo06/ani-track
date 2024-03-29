@@ -8,6 +8,7 @@ ipcRenderer.on("version", (_, ver) => {
 // begin pre-loading once database is opened
 ipcRenderer.on("render", render)
 
+let categories = ["watchlists", "tags", "recommenders"]
 let popups = [] // emulate a stack for layered popups
 let __openClickFlag = false
 let managing = ""
@@ -90,6 +91,41 @@ function toggleCollapsible(svg, hidden, bool) {
     }
 }
 
+function getCategory(target) {
+    let tbl = $(target).parent().parent().parent().find(".-select-title")[0].childNodes[0].nodeValue.trim().toLowerCase().slice(0, -1)
+
+    if (tbl == "list") tbl = "watchlist"
+    else if (tbl == "peopl") tbl = "recommender"
+
+    return tbl
+}
+
+function loadRoleIcons() {
+    categories.forEach(async (cat) => {
+        let category = cat.slice(0, -1)
+        $(`#${category}-box`).find(".-select-content").html("")
+
+        let args = {
+            "animeId": $("#anime-popup").data("animeId"),
+            "table": category,
+            "table-content": category+"Content",
+        }
+
+        let html = ""
+        let rows = await ipcRenderer.invoke("queryDB", "get", "all-in", args)
+        // console.log(rows)
+
+        rows.forEach((row) => {
+            let el = `<div class="-selection -selection-hoverable no-highlight">
+                        <button class="-de-select">${row.name.toUpperCase()}</button>
+                    </div>\n`
+            html += el
+        })
+
+        $(`#${category}-box`).find(".-select-content").html(html)
+    })
+}
+
 async function openAnime(event) {
     __openClickFlag = true
     let animeId = parseInt(event.target.id)
@@ -114,6 +150,9 @@ async function openAnime(event) {
             </div>\n`
     })
     $("#genre-box").find(".-select-content").html(genresHTML)
+
+    // preload existing role icons
+    loadRoleIcons()
 
     // open
     openAsPopup(popup)
@@ -170,7 +209,7 @@ $(".manage-btn").on("click", (event) => {
     switchTab("Manage Tab")
     $('#title')[0].childNodes[0].nodeValue = `Manage ${title}`
 
-    console.log(title)
+    // console.log(title)
     managing = title
 })
 
@@ -179,14 +218,11 @@ $("#add-item").on("click", () => {
 })
 
 $(".-addrole").on("click", async (event) => {
-    console.log("opening popup????")
+    $("#role-popup").find(".-content").html("")
     openAsPopup($("#role-popup")[0])
 
     // load the popup with clickables
-    let tbl = $(event.target).parent().parent().parent().find(".-select-title")[0].childNodes[0].nodeValue.trim().toLowerCase().slice(0, -1)
-
-    if (tbl == "list") tbl = "watchlist"
-    else if (tbl == "peopl") tbl = "recommender"
+    let tbl = getCategory(event.target)
 
     let args = {
         "table": tbl,
@@ -197,12 +233,33 @@ $(".-addrole").on("click", async (event) => {
     let html = ""
     let rows = await ipcRenderer.invoke("queryDB", "get", "all-except", args)
 
+    console.log(rows)
+
     rows.forEach((row) => {
         let n = row.name.toUpperCase()
         html += `<div class="-selectable no-highlight -addrole-internal" id="${tbl}$separator$${n}$separator$${row.id}$separator$${args.animeId}">${n}</div>`
     })
 
     $("#role-popup").find(".-content").html(html)
+})
+
+$(document).on("click", ".-selection-hoverable", async function(event) {
+    let tbl = getCategory(event.target)
+
+    let txt = $(event.target).text().trim().toUpperCase()
+    let id = await ipcRenderer.invoke("queryDB", "get", "id", {"table": tbl, "name": txt})
+
+    if (id.length > 0) {
+        let args2 = {
+            "table": tbl+"Content",
+            "animeId": $("#anime-popup").data("animeId"), // animeId
+            "id": id[0].id
+        }
+        ipcRenderer.invoke("queryDB", "ud", "delete-content", args2)
+        
+        $(event.target).remove()
+        loadRoleIcons()
+    }
 })
 
 $(document).on("click", ".-addrole-internal", async function(event){
@@ -224,11 +281,8 @@ $(document).on("click", ".-addrole-internal", async function(event){
         console.log("not found, adding")
 
         await ipcRenderer.invoke("queryDB", "insert", "content", args2)
+        loadRoleIcons()
 
-        let el = `<div class="-selection no-highlight -selection-hoverable">
-                  <button class="-de-select">${value}</button>
-              </div>`
-        $(`#${category}-box`).find(".-select-content")[0].innerHTML += el
         closePopup($("#role-popup"))
     } else {
         console.log("found, not adding")
@@ -241,7 +295,7 @@ $("#create-new-popup").find(".-search-bar").on("keypress", async function (e) {
 
     let args = {
         "table": managing.trim().slice(0, -1),
-        "name": name
+        "name": name.toUpperCase()
     }
 
     await ipcRenderer.invoke("queryDB", "insert", "element", args)
@@ -295,7 +349,7 @@ $(document).on("click", ".--view-watchlist", function(){
 async function render() {
     // load each manage tab
 
-    (["watchlists", "tags", "recommenders"]).forEach(async (tabName) => {
+    (categories).forEach(async (tabName) => {
         let classes = (tabName == "watchlists") ? `--view-watchlist` : ""
 
         let html = ""

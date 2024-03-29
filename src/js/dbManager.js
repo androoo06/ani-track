@@ -34,6 +34,10 @@ module.exports.init = async function () {
         console.log('Connected to DB')
     })
 
+    db.on("error", function(error) {
+        console.log("Getting an error : ", error);
+    })
+
     db.get("PRAGMA foreign_keys = ON")
 }
 
@@ -51,6 +55,7 @@ let queries = {
         "id": `SELECT (id) FROM [table] WHERE (name = "[name]")`,
         "all": "SELECT * FROM [table]",
         "all-except": "SELECT * from [table] WHERE id IN  (SELECT id from [table] EXCEPT SELECT id FROM [table-content] WHERE animeid = [animeId])",
+        "all-in": `SELECT (name) FROM [table] WHERE id IN (SELECT (id) FROM [table-content] WHERE (animeId = [animeId]))`,
         "content": "SELECT A.* from Anime A, [table] t WHERE ((A.id = t.animeId) AND (t.id = [tableId]))",
         "watching": "SELECT (id) FROM Anime WHERE (watching = 1)",
         "filtered": "SELECT A.* from Anime A [filterProperties]",
@@ -58,14 +63,14 @@ let queries = {
     },
 
     "insert": {
-        "element": `INSERT INTO [table] (name) VALUES ("[name]")`,
-        "anime": "INSERT INTO Anime (id) VALUES ([animeId])",
-        "content": "INSERT INTO [table-content] (id, animeId) VALUES ([id], [animeId])"
+        "element": `INSERT OR IGNORE INTO [table] (name) VALUES ("[name]")`,
+        "anime": "INSERT OR IGNORE INTO Anime (id) VALUES ([animeId])",
+        "content": "INSERT OR IGNORE INTO [table-content] (id, animeId) VALUES ([id], [animeId])"
     },
 
     "ud": {
         "update": "UPDATE Anime SET ([property] = [value]) WHERE (id = [animeId])",
-        "delete": "DELETE FROM [table] WHERE (id = [elementId])"
+        "delete-content": "DELETE FROM [table] WHERE ((animeId = [animeId]) AND (id = [id]))"
     }
 }
 
