@@ -249,14 +249,28 @@ $(document).on("click", ".-selection-hoverable", async function(event) {
     let txt = $(event.target).text().trim().toUpperCase()
     let id = await ipcRenderer.invoke("queryDB", "get", "id", {"table": tbl, "name": txt})
 
+    let animeId = $("#anime-popup").data("animeId")
+
     if (id.length > 0) {
-        let args2 = {
+        let args = {
             "table": tbl+"Content",
-            "animeId": $("#anime-popup").data("animeId"), // animeId
+            "animeId": animeId,
             "id": id[0].id
         }
-        ipcRenderer.invoke("queryDB", "ud", "delete-content", args2)
-        
+
+        await ipcRenderer.invoke("queryDB", "ud", "delete-content", args)
+        // let existsRows = await ipcRenderer.invoke("queryDB", "get", "exists", args)
+        // console.log(existsRows)
+        // let exists = existsRows.length > 0
+
+        // if (!exists) {
+        //     let args2 = {
+        //         "table": "Anime",
+        //         "id": animeId,
+        //     }
+        //     await ipcRenderer.invoke("queryDB", "ud", "delete-main", args2)
+        // }
+
         $(event.target).remove()
         loadRoleIcons()
     }
@@ -291,16 +305,16 @@ $(document).on("click", ".-addrole-internal", async function(event){
 
 $("#create-new-popup").find(".-search-bar").on("keypress", async function (e) {
     if (!hitEnter(e)) return
-    let name = `${$("#create-new-popup").find(".-search-bar").val()}`
+    let name = `${$("#create-new-popup").find(".-search-bar").val().trim().toUpperCase()}`
 
     let args = {
         "table": managing.trim().slice(0, -1),
-        "name": name.toUpperCase()
+        "name": name
     }
 
     await ipcRenderer.invoke("queryDB", "insert", "element", args)
 
-    let tab = `<div class="list-tab no-highlight --view-watchlist" style="color: #d7d5d5b1;">${name.toUpperCase()}</div>`
+    let tab = `<div class="list-tab no-highlight --view-watchlist" style="color: #d7d5d5b1;">${name}</div>`
 
     // add to homepage, manage tab
     $("#manage-tab")[0].innerHTML += tab
@@ -338,11 +352,35 @@ $("#search-popup").find(".-search-bar").on("keypress", async function (e) {
     toggleCollapsible(svg, hidden, true)
 })
 
-$(document).on("click", ".--view-watchlist", function(){
+$(document).on("click", ".--view-watchlist", async function(){
     __openClickFlag = true
     switchTab("View Watchlist")
 
-    $('#title')[0].childNodes[0].nodeValue = `Viewing ${$(this).text()}`
+    let table = $(this).text().trim().toUpperCase()
+    $('#title')[0].childNodes[0].nodeValue = `Viewing ${table}`
+
+    let tId = await ipcRenderer.invoke("queryDB", "get", "id", {"table": "Watchlist", "name": table})
+
+    let args = {
+        "table-content": "WatchlistContent",
+        "tableId": tId[0].id,
+    }
+
+    let rows = await ipcRenderer.invoke("queryDB", "get", "content", args)
+    let html = ""
+    
+    await Promise.all(rows.map(async (row) => {
+        let data
+        await ipcRenderer.invoke("queryAnilist", "specifics", row.id).then(response => {
+            data = response
+        })
+        console.log(data)
+
+        html += `<div class="list-tab no-highlight" style="color: #d7d5d5b1;">${data.title}</div>`
+    }))
+
+    console.log(html)
+    $(`#view-watchlist-animecontent`).html(`<br>${html}`)
 })
 
 // load data when app launches

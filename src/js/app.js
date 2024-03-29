@@ -50,6 +50,10 @@ const createWindow = () => {
     globalShortcut.register('f8', () => {
         shell.openPath(projectRoot)
     })
+
+    globalShortcut.register('f7', () => {
+        shell.openPath(app.getPath("userData"))
+    })
 }
 
 app.whenReady().then(createWindow)

@@ -26,12 +26,15 @@ module.exports.init = async function () {
         console.log("Existing user")
     })
 
-    db = new sqlite3.Database(dsPath, sqlite3.OPEN_READWRITE, (err) => {
-        if (err) {
-            return console.error(err.message);
-        }
-
-        console.log('Connected to DB')
+    await new Promise(resolve => {
+        db = new sqlite3.Database(dsPath, sqlite3.OPEN_READWRITE, (err) => {
+            if (err) {
+                return console.error(err.message);
+            }
+    
+            console.log('Connected to DB')
+            resolve()
+        })    
     })
 
     db.on("error", function(error) {
@@ -56,21 +59,23 @@ let queries = {
         "all": "SELECT * FROM [table]",
         "all-except": "SELECT * from [table] WHERE id IN  (SELECT id from [table] EXCEPT SELECT id FROM [table-content] WHERE animeid = [animeId])",
         "all-in": `SELECT (name) FROM [table] WHERE id IN (SELECT (id) FROM [table-content] WHERE (animeId = [animeId]))`,
-        "content": "SELECT A.* from Anime A, [table] t WHERE ((A.id = t.animeId) AND (t.id = [tableId]))",
+        "content": "SELECT A.* from Anime A, [table-content] t WHERE ((A.id = t.animeId) AND (t.id = [tableId]))",
         "watching": "SELECT (id) FROM Anime WHERE (watching = 1)",
         "filtered": "SELECT A.* from Anime A [filterProperties]",
-        "exact": `SELECT * FROM [table-content] WHERE (id = [id]) AND (animeId = [animeId])`
+        "exact": `SELECT * FROM [table-content] WHERE (id = [id]) AND (animeId = [animeId])`,
+        "exists": `SELECT animeId from TagContent UNION SELECT animeid FROM WatchlistContent UNION SELECT animeId FROM RecommenderContent`,
     },
 
     "insert": {
         "element": `INSERT OR IGNORE INTO [table] (name) VALUES ("[name]")`,
         "anime": "INSERT OR IGNORE INTO Anime (id) VALUES ([animeId])",
-        "content": "INSERT OR IGNORE INTO [table-content] (id, animeId) VALUES ([id], [animeId])"
+        "content": "INSERT OR IGNORE INTO [table-content] (id, animeId) VALUES ([id], [animeId])",
     },
 
     "ud": {
         "update": "UPDATE Anime SET ([property] = [value]) WHERE (id = [animeId])",
-        "delete-content": "DELETE FROM [table] WHERE ((animeId = [animeId]) AND (id = [id]))"
+        "delete-content": "DELETE FROM [table] WHERE ((animeId = [animeId]) AND (id = [id]))",
+        "delete-main": `DELETE FROM [table] WHERE (id = [id])`,
     }
 }
 
@@ -110,8 +115,6 @@ module.exports.handleQuery = async function (_, channel, query, args) {
             })
         })
     } else {
-        try {
-            db.run(updatedQuery)
-        } catch (e) { console.log(e) }
+        db.run(updatedQuery)
     }
 }
