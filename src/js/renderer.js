@@ -5,6 +5,9 @@ ipcRenderer.on("version", (_, ver) => {
     $("#version").text(`v${ver}`)
 })
 
+// begin pre-loading once database is opened
+ipcRenderer.on("render", render)
+
 let popups = [] // emulate a stack for layered popups
 let __openClickFlag = false
 let managing = ""
@@ -183,6 +186,7 @@ $(".-addrole").on("click", async (event) => {
     let tbl = $(event.target).parent().parent().parent().find(".-select-title")[0].childNodes[0].nodeValue.trim().toLowerCase().slice(0, -1)
 
     if (tbl == "list") tbl = "watchlist"
+    else if (tbl == "peopl") tbl = "recommender"
 
     let args = {
         "table": tbl,
@@ -215,18 +219,20 @@ $(document).on("click", ".-addrole-internal", async function(event){
 
     let data = await ipcRenderer.invoke("queryDB", "get", "exact", args2)
     console.log(data)
+
     if (data.length == 0) {
         console.log("not found, adding")
+
         await ipcRenderer.invoke("queryDB", "insert", "content", args2)
+
+        let el = `<div class="-selection no-highlight -selection-hoverable">
+                  <button class="-de-select">${value}</button>
+              </div>`
+        $(`#${category}-box`).find(".-select-content")[0].innerHTML += el
+        closePopup($("#role-popup"))
     } else {
         console.log("found, not adding")
     }
-
-    let el = `<div class="-selection no-highlight -selection-hoverable">
-                  <button class="-de-select">${value}</button>
-              </div>`
-    $(`#${category}-box`).find(".-select-content")[0].innerHTML += el
-    closePopup($("#role-popup")[0])
 })
 
 $("#create-new-popup").find(".-search-bar").on("keypress", async function (e) {
@@ -286,7 +292,7 @@ $(document).on("click", ".--view-watchlist", function(){
 })
 
 // load data when app launches
-$(async function () {
+async function render() {
     // load each manage tab
 
     (["watchlists", "tags", "recommenders"]).forEach(async (tabName) => {
@@ -302,5 +308,4 @@ $(async function () {
         $(`#${tabName}-content`).html(`<br>${html}`)
     })
 
-
-})
+}

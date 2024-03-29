@@ -1,6 +1,8 @@
 const sqlite3 = require('sqlite3').verbose();
-const { existsSync, copyFile, constants } = require('fs')
+const { existsSync, constants } = require('fs')
+const { copyFile } = require('fs/promises')
 const path = require('path')
+const { app } = require('electron')
 
 // Get whether it's in testing or in production
 var rootDir = path.dirname(__dirname).replace("app.asar", "")
@@ -10,36 +12,37 @@ if (!existsSync(assets)) {
     assets = path.join(rootDir, "src/assets")
 }
 
-let dsPath = assets + '\\..\\..\\..\\anitrack_data.db'
-let defaultPath = assets+"/data/default.db"
+let userDataPath = app.getPath('userData')
+let dsPath = userDataPath + "/anitrack_data.db"
+let defaultPath = assets + "/data/default.db"
 
 // Database
 let db;
 
-module.exports.init = function() {
-    copyFile(defaultPath, dsPath, constants.COPYFILE_EXCL, (err) => {
-        // console.log(err)
+module.exports.init = async function () {
+    await copyFile(defaultPath, dsPath, constants.COPYFILE_EXCL).then(function () {
+        console.log("First time user: added file")
+    }).catch(function() {
+        console.log("Existing user")
     })
 
-    setTimeout(() => {
-        db = new sqlite3.Database(dsPath, sqlite3.OPEN_READWRITE, (err) => {
-            if (err) {
-                return console.error(err.message);
-            }
-        
-            console.log('Connected to DB')
-        })
-    
-        db.get("PRAGMA foreign_keys = ON")
-    }, 0)   
+    db = new sqlite3.Database(dsPath, sqlite3.OPEN_READWRITE, (err) => {
+        if (err) {
+            return console.error(err.message);
+        }
+
+        console.log('Connected to DB')
+    })
+
+    db.get("PRAGMA foreign_keys = ON")
 }
 
-module.exports.close = function() {
+module.exports.close = function () {
     db.close((err) => {
         if (err) {
             return console.error(err.message)
         }
-        console.log('Close the database connection.')
+        console.log('Closed DB.')
     })
 }
 
@@ -47,7 +50,7 @@ let queries = {
     "get": {
         "id": `SELECT (id) FROM [table] WHERE (name = "[name]")`,
         "all": "SELECT * FROM [table]",
-        "all-except": "SELECT * from [table] WHERE (SELECT t.id from [table] t EXCEPT SELECT tc.id FROM [table-content] tc WHERE (tc.animeId = [animeId]))",
+        "all-except": "SELECT * from [table] WHERE id IN  (SELECT id from [table] EXCEPT SELECT id FROM [table-content] WHERE animeid = [animeId])",
         "content": "SELECT A.* from Anime A, [table] t WHERE ((A.id = t.animeId) AND (t.id = [tableId]))",
         "watching": "SELECT (id) FROM Anime WHERE (watching = 1)",
         "filtered": "SELECT A.* from Anime A [filterProperties]",
@@ -84,7 +87,7 @@ function replaceQuery(q, args) {
     return nQ
 }
 
-module.exports.handleQuery = async function(_, channel, query, args) {
+module.exports.handleQuery = async function (_, channel, query, args) {
     let updatedQuery = replaceQuery(queries[channel][query], args)
 
     if (updatedQuery == "$Error$") {
@@ -104,6 +107,6 @@ module.exports.handleQuery = async function(_, channel, query, args) {
     } else {
         try {
             db.run(updatedQuery)
-        } catch (e) {console.log(e)}
+        } catch (e) { console.log(e) }
     }
 }
