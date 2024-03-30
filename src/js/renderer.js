@@ -332,18 +332,20 @@ $("#search-popup").find(".-search-bar").on("keypress", async function (e) {
         data = response
     })
 
-    let content = $("#search-popup").find(".collap-right")[0]
-    content.innerHTML = "<br>"
-
+    let content = $("#search-popup").find(".collap-right")
     // fill list with searched result titles
+    let html = ""
     data.forEach(media => {
-        let el = document.createElement('div')
-        el.addEventListener("click", openAnime)
+        // let el = document.createElement('div')
+        // el.addEventListener("click", openAnime)
 
-        el.id = media.id
-        $(el).html(media.title)
-        $(el).appendTo(content)
+        // el.id = media.id
+        // $(el).html(media.title)
+        // $(el).appendTo(content)
+
+        html += `<div class="--open-anime" id="${media.id}">${media.title}</div>`
     })
+    content.html(`<br>${html}`)
 
     let collapsible = $("#search-popup").find(".collapsible")
     let hidden = collapsible.find(".hidden")
@@ -369,19 +371,24 @@ $(document).on("click", ".--view-watchlist", async function(){
     let rows = await ipcRenderer.invoke("queryDB", "get", "content", args)
     let html = ""
     
+    let animes = []
     await Promise.all(rows.map(async (row) => {
         let data
         await ipcRenderer.invoke("queryAnilist", "specifics", row.id).then(response => {
             data = response
         })
-        console.log(data)
-
-        html += `<div class="list-tab no-highlight" style="color: #d7d5d5b1;">${data.title}</div>`
+        // console.log(data)
+        html += `<div class="list-tab no-highlight --open-anime" id="${row.id}" style="color: #d7d5d5b1;">${data.title}</div>`
+        animes.push([data.title, row.id])
     }))
 
-    console.log(html)
+    // console.log(html)
     $(`#view-watchlist-animecontent`).html(`<br>${html}`)
+
+    fillWheel(animes)
 })
+
+$(document).on("click", ".--open-anime", openAnime)
 
 // load data when app launches
 async function render() {

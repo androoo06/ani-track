@@ -49,8 +49,11 @@ function spin() {
 
     setTimeout(()=>{
         let txtId = 2 + (2 * victor)
-        let txt = $($("#wheel").children()[txtId]).text()
+        let el = $("#wheel").children()[txtId]
+        let id = $(el).data("animeId")
+        let txt = $(el).text()
         $("#wheel-popup").find(".-sub-title").text(txt)
+        $("#wheel-popup").data("animeId", id)
         
         openAsPopup($("#wheel-popup")[0])
     }, 11000)
@@ -92,8 +95,8 @@ function fillWheel(contents) {
                     <span class="abs wheel-element" style="clip-path: polygon(50% 50%, ${xy[0]}% ${xy[1]}%, ${xy2[0]}% ${xy2[1]}%); 
                         background-color: ${colors[i % colors.length]};">
                     </span>
-                    <span class="abs wheel-word-box" style="left: ${xy3[0] - (sx * subScalar)}%; top: ${xy3[1] - (sy * subScalar) - 8.25}%; transform: rotate(${(inc / 2) + (i * inc)}deg); color: ${textColors[i % textColors.length]};">
-                        ${anime}
+                    <span class="abs wheel-word-box" style="left: ${xy3[0] - (sx * subScalar)}%; top: ${xy3[1] - (sy * subScalar) - 8.25}%; transform: rotate(${(inc / 2) + (i * inc)}deg); color: ${textColors[i % textColors.length]};" data-animeId="${anime[1]}">
+                        ${anime[0]}
                     </span>
                 `
 
@@ -101,8 +104,6 @@ function fillWheel(contents) {
         i++;
     }) 
 }
-
-// fillWheel(["0a", "1b", "2c"])
 
 $("#spin-wheel").on("click", spin)
 
