@@ -17,28 +17,31 @@
     <div id="anime-popup" class="--popup">
         <div class="-title">
             <div class="-title-disp"">
-            ANIME TITLE
+                ANIME TITLE
             </div>
         </div>
-        <div class=" -rating-window">
-            <div style="float: left;">
-                <div>
-                    <span id="rated-label" style="color: #d7d5d5b1; padding-left: 2%;">Unrated</span>
-                    <span class="-rating hidden">
-                        10★
-                    </span>
+        <table class="-manage-table">
+            <th class="-rating-tab">
+                <span id="rated-label" class="-rating --center" style="color: #d7d5d5b1;">UNRATED</span>
+                <span class="-rating --center hidden">
+                    10★
+                </span>
+            </th>
+            <th class="-watching-tab">
+                <button class="btn-style">START WATCHING</button>
+                <div class="--center hidden">
+                    WATCHING
                 </div>
-            </div>
-
-            <div class="-rating">
-                <input type="checkbox">
-                Completed
-            </div>
-        </div>
+            </th>
+            <th class="-completed-tab">
+                <input id="completed-checkbox "type="checkbox">
+                <label class="--center" for="completed-checkbox">COMPLETED</label>
+            </th>
+        </table>
         <button class="popup-exit" style="background: url(assets/media/x.svg);"></button>
         <img>
-        <div class="-desc"></div>
-        <table>
+        <div class="-desc">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Voluptatum ex, molestiae saepe fuga vel est. Consectetur commodi, cumque laudantium, error ducimus delectus veritatis ab voluptatum accusamus soluta qui numquam fugiat.</div>
+        <table class="-role-table">
             <th id="watchlist-box">
                 <div class="-select-title">
                     Lists

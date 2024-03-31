@@ -9,7 +9,7 @@
     top: 15%;
     width: 85%;
     /* height: 70%; */
-    min-height: 50%;
+    min-height: 50vh;
 
     z-index: 99;
     opacity: 1;
@@ -32,27 +32,6 @@
     z-index: 2;
 
     color: white;
-}
-
-.-rating-window div {
-    height: 7vh;
-    line-height: 7vh;
-    font-size: 4vh;
-    width: 100%;
-    top: 0;
-    /* background-color: red; */
-    position: absolute;
-}
-
-.-rating-window .-rating {
-    min-width: 25%;
-    /* background-color: blue; */
-    right: 0;
-    text-align: right;
-}
-
-.-rating-window .-rating input {
-    height: 3vh;
 }
 
 #anime-popup .-desc {
@@ -101,7 +80,7 @@
     z-index: 1;
 }
 
-#anime-popup table {
+#anime-popup .-role-table {
     position: absolute;
     /* background-color: yellow; */
     width: 75%;
@@ -113,25 +92,25 @@
     z-index: 3;
 }
 
-#anime-popup table th {
+#anime-popup .-role-table th {
     /* background-color: white; */
     position: relative;
 }
 
-#anime-popup table th ::-webkit-scrollbar {
+#anime-popup .-role-table th ::-webkit-scrollbar {
     display: none;
 }
 
 #anime-popup .-select-title {
     /* background-color: red; */
     width: 100%;
-    top: 3%;
+    top: 0;
 
     position: absolute;
 
     font-size: 3vh;
-    height: 15%;
-    line-height: 4vh;
+    height: 3.5vh;
+    line-height: 3.5vh;
 
     z-index: 10;
 }
@@ -140,8 +119,8 @@
     /* background-color: blue; */
 
     width: 100%;
-    top: 18%;
-    height: 82%;
+    top: 3.75vh;
+    height: 80%;
     position: absolute;
     font-size: 3vh;
     overflow: auto;
@@ -179,6 +158,68 @@
     /* background-color: red; */
 }
 
-/* .-rating {
-    color: blue;
+.-manage-table {
+    position: absolute;
+    top: 8vh;
+    height: 7vh;
+    max-height: 7vh;
+    /* background-color: red; */
+    width: 75%;
+    overflow: hidden;
+
+    border-collapse: collapse;
+    table-layout: fixed;
+    z-index: 3;
+}
+
+.-manage-table th {
+    /* background-color: blue; */
+    max-width: 33.33%;
+    height: 7vh;
+    max-height: 7vh;
+    font-size: 3vmin;
+}
+
+.-manage-table input {
+    height: 2vmin;
+    line-height: 7vh;
+}
+
+/* .-manage-table .-t {
+    background-color: red;
+} */
+
+.-manage-table button {
+    width: 80%;
+    height: 4vmin;
+    line-height: 4vmin;
+    font-size: 2vmin;
+    overflow: hidden;
+}
+
+.--center {
+    font-size: 2.5vmin;
+    line-height: 7vh;
+}
+
+
+/* .-rating-window div {
+    height: 7vh;
+    line-height: 7vh;
+    font-size: 4vh;
+    width: 100%;
+    top: 0;
+    background-color: red;
+    position: absolute;
+}
+
+.-rating-window .-rating {
+    min-width: 25%;
+    background-color: blue;
+    right: 0;
+    text-align: right;
+}
+
+.-rating-window .-rating input {
+    height: 3vh;
 } */
