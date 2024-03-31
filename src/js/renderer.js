@@ -12,11 +12,12 @@ let categories = ["watchlists", "tags", "recommenders"]
 let popups = [] // emulate a stack for layered popups
 let __openClickFlag = false
 let managing = ""
+let currentViewing = ""
 
 function hitEnter(e) {
     if (!e) e = window.event
     var keyCode = e.code || e.key
-    return (keyCode == 'Enter') 
+    return (keyCode == 'Enter')
 }
 
 function peek(arr) {
@@ -47,6 +48,7 @@ function switchTab(newTabDisplay) {
 
     // change the text without overwriting the button HTML
     managing = ""
+    currentViewing = ""
     $('#title')[0].childNodes[0].nodeValue = newTabDisplay
 }
 
@@ -108,7 +110,7 @@ function loadRoleIcons() {
         let args = {
             "animeId": $("#anime-popup").data("animeId"),
             "table": category,
-            "table-content": category+"Content",
+            "table-content": category + "Content",
         }
 
         let html = ""
@@ -116,7 +118,7 @@ function loadRoleIcons() {
         // console.log(rows)
 
         rows.forEach((row) => {
-            let el = `<div class="-selection -selection-hoverable no-highlight">
+            let el = `<div class="-selection -delete-role no-highlight">
                         <button class="-de-select">${row.name.toUpperCase()}</button>
                     </div>\n`
             html += el
@@ -126,14 +128,40 @@ function loadRoleIcons() {
     })
 }
 
+async function refreshViewWatchlist(table) {
+    if (table === "") return;
+
+    $('#title')[0].childNodes[0].nodeValue = `Viewing ${table}`
+
+    let tId = await ipcRenderer.invoke("queryDB", "get", "id", { "table": "Watchlist", "name": table })
+
+    let args = {
+        "table-content": "WatchlistContent",
+        "tableId": tId[0].id,
+    }
+
+    let rows = await ipcRenderer.invoke("queryDB", "get", "content", args)
+    let html = ""
+
+    let animes = []
+    await Promise.all(rows.map(async (row) => {
+        let data = await ipcRenderer.invoke("queryAnilist", "specifics", row.id)
+        // console.log(data)
+        html += `<div class="list-tab no-highlight --open-anime" id="${row.id}" style="color: #d7d5d5b1;">${data.title}</div>`
+        animes.push([data.title, row.id])
+    }))
+
+    // console.log(html)
+    $(`#view-watchlist-animecontent`).html(`<br>${html}`)
+
+    fillWheel(animes)
+}
+
 async function openAnime(event) {
     __openClickFlag = true
     let animeId = parseInt(event.target.id)
 
-    let data
-    await ipcRenderer.invoke("queryAnilist", "specifics", animeId).then(response => {
-        data = response
-    })
+    let data = await ipcRenderer.invoke("queryAnilist", "specifics", animeId)
 
     // fill anime popup with specifics
     let popup = $("#anime-popup")[0]
@@ -144,7 +172,7 @@ async function openAnime(event) {
 
     let genresHTML = ""
     data.genres.forEach(genre => {
-        genresHTML += 
+        genresHTML +=
             `<div class="-selection no-highlight">
                 <button class="-de-select">${genre}</button>
             </div>\n`
@@ -158,22 +186,46 @@ async function openAnime(event) {
     openAsPopup(popup)
 }
 
+async function loadCategory(tabName) {
+    let classes = (tabName == "watchlists") ? `--view-watchlist` : ""
+
+    let html = ""
+    let rows = await getAll(tabName)
+    rows.forEach((row) => {
+        html += `<div class="list-tab no-highlight ${classes}" style="color: #d7d5d5b1;">${row.name.toUpperCase()}</div>`
+    })
+
+    $(`#manage-${tabName}`).html(html)
+    $(`#${tabName}-content`).html(`<br>${html}`)
+}
+
+async function loadCurrentlyWatching() {
+    let html = ""
+    let rows = await ipcRenderer.invoke("queryDB", "get", "watching", {})
+    await Promise.all(rows.map(async (row) => {
+        let data = await ipcRenderer.invoke("queryAnilist", "specifics", row.id)
+        html += `<div id="${row.id}" class="list-tab no-highlight --open-anime" style="color: #d7d5d5b1;">${data.title.toUpperCase()}</div>`
+    }))
+
+    $(`#watching-content`).html(`<br>${html}`)
+}
+
 $(".collapsible").on("click", (event) => {
     if ($(event.target).is("input") || $(event.target).hasClass("collap-right")) {
         return
     }
 
     // hacky workaround to event bubbling
-    setTimeout(()=> {
+    setTimeout(() => {
         if (__openClickFlag) {
             __openClickFlag = false
             return
         }
-    
+
         let collapsible = $(event.target).closest(".collapsible")
         let hidden = collapsible.find(".hidden")
         let svg = collapsible.find(".left").find("span")
-    
+
         if (svg.css("transform") == "matrix(-1, 0, 0, -1, 0, 0)") {
             toggleCollapsible(svg, hidden, true)
         } else {
@@ -233,8 +285,6 @@ $(".-addrole").on("click", async (event) => {
     let html = ""
     let rows = await ipcRenderer.invoke("queryDB", "get", "all-except", args)
 
-    console.log(rows)
-
     rows.forEach((row) => {
         let n = row.name.toUpperCase()
         html += `<div class="-selectable no-highlight -addrole-internal" id="${tbl}$separator$${n}$separator$${row.id}$separator$${args.animeId}">${n}</div>`
@@ -243,17 +293,35 @@ $(".-addrole").on("click", async (event) => {
     $("#role-popup").find(".-content").html(html)
 })
 
-$(document).on("click", ".-selection-hoverable", async function(event) {
+$("#start-anime").on("click", async () => {
+    let animeId = $("#wheel-popup").data("animeId")
+
+    let args = {
+        "property": "watching",
+        "value": "1",
+        "animeId": animeId
+    }
+
+    await ipcRenderer.invoke("queryDB", "ud", "update", args)
+    await ipcRenderer.invoke("queryDB", "ud", "delete-watchlist-animes", args)
+
+    refreshViewWatchlist(currentViewing)
+    loadCurrentlyWatching()
+
+    closePopup($("#wheel-popup")[0])
+})
+
+$(document).on("click", ".-delete-role", async function (event) {
     let tbl = getCategory(event.target)
 
     let txt = $(event.target).text().trim().toUpperCase()
-    let id = await ipcRenderer.invoke("queryDB", "get", "id", {"table": tbl, "name": txt})
+    let id = await ipcRenderer.invoke("queryDB", "get", "id", { "table": tbl, "name": txt })
 
     let animeId = $("#anime-popup").data("animeId")
 
     if (id.length > 0) {
         let args = {
-            "table": tbl+"Content",
+            "table": tbl + "Content",
             "animeId": animeId,
             "id": id[0].id
         }
@@ -273,15 +341,16 @@ $(document).on("click", ".-selection-hoverable", async function(event) {
 
         $(event.target).remove()
         loadRoleIcons()
+        refreshViewWatchlist(currentViewing)
     }
 })
 
-$(document).on("click", ".-addrole-internal", async function(event){
+$(document).on("click", ".-addrole-internal", async function (event) {
     let [category, value, categoryId, animeId] = event.target.id.split("$separator$")
 
-    let args1 = {"animeId": animeId}
+    let args1 = { "animeId": animeId }
     await ipcRenderer.invoke("queryDB", "insert", "anime", args1)
-    
+
     let args2 = {
         "table-content": `${category}Content`,
         "id": categoryId,
@@ -296,12 +365,24 @@ $(document).on("click", ".-addrole-internal", async function(event){
 
         await ipcRenderer.invoke("queryDB", "insert", "content", args2)
         loadRoleIcons()
+        refreshViewWatchlist(currentViewing)
 
         closePopup($("#role-popup"))
     } else {
         console.log("found, not adding")
     }
 })
+
+$(document).on("click", ".--view-watchlist", async function () {
+    __openClickFlag = true
+    switchTab("View Watchlist")
+
+    let table = $(this).text().trim().toUpperCase()
+    currentViewing = table
+    refreshViewWatchlist(table)
+})
+
+$(document).on("click", ".--open-anime", openAnime)
 
 $("#create-new-popup").find(".-search-bar").on("keypress", async function (e) {
     if (!hitEnter(e)) return
@@ -327,10 +408,7 @@ $("#search-popup").find(".-search-bar").on("keypress", async function (e) {
 
     if (params.trim() == "") return
 
-    let data
-    await ipcRenderer.invoke("queryAnilist", "search", params).then(response => {
-        data = response
-    })
+    let data = await ipcRenderer.invoke("queryAnilist", "search", params)
 
     let content = $("#search-popup").find(".collap-right")
     // fill list with searched result titles
@@ -354,57 +432,13 @@ $("#search-popup").find(".-search-bar").on("keypress", async function (e) {
     toggleCollapsible(svg, hidden, true)
 })
 
-$(document).on("click", ".--view-watchlist", async function(){
-    __openClickFlag = true
-    switchTab("View Watchlist")
-
-    let table = $(this).text().trim().toUpperCase()
-    $('#title')[0].childNodes[0].nodeValue = `Viewing ${table}`
-
-    let tId = await ipcRenderer.invoke("queryDB", "get", "id", {"table": "Watchlist", "name": table})
-
-    let args = {
-        "table-content": "WatchlistContent",
-        "tableId": tId[0].id,
-    }
-
-    let rows = await ipcRenderer.invoke("queryDB", "get", "content", args)
-    let html = ""
-    
-    let animes = []
-    await Promise.all(rows.map(async (row) => {
-        let data
-        await ipcRenderer.invoke("queryAnilist", "specifics", row.id).then(response => {
-            data = response
-        })
-        // console.log(data)
-        html += `<div class="list-tab no-highlight --open-anime" id="${row.id}" style="color: #d7d5d5b1;">${data.title}</div>`
-        animes.push([data.title, row.id])
-    }))
-
-    // console.log(html)
-    $(`#view-watchlist-animecontent`).html(`<br>${html}`)
-
-    fillWheel(animes)
-})
-
-$(document).on("click", ".--open-anime", openAnime)
-
 // load data when app launches
-async function render() {
+function render() {
     // load each manage tab
-
     (categories).forEach(async (tabName) => {
-        let classes = (tabName == "watchlists") ? `--view-watchlist` : ""
-
-        let html = ""
-        let rows = await getAll(tabName)
-        rows.forEach((row) => {
-            html += `<div class="list-tab no-highlight ${classes}" style="color: #d7d5d5b1;">${row.name.toUpperCase()}</div>`
-        })
-
-        $(`#manage-${tabName}`).html(html)
-        $(`#${tabName}-content`).html(`<br>${html}`)
+        loadCategory(tabName)
     })
 
+     // load currently watching
+     loadCurrentlyWatching()
 }

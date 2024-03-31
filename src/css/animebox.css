@@ -160,7 +160,7 @@
     font-size: 1.5vh;
 }
 
-.-selection-nohover:hover {
+.-selection-plusbtn:hover {
     background-color: #F88379;
 }
 
@@ -170,7 +170,7 @@
     background: none;
 }
 
-.-selection-hoverable .-de-select:hover {
+.-delete-role .-de-select:hover {
     background: url(../assets/media/x.svg);
 }
 

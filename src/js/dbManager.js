@@ -73,7 +73,8 @@ let queries = {
     },
 
     "ud": {
-        "update": "UPDATE Anime SET ([property] = [value]) WHERE (id = [animeId])",
+        "update": "UPDATE Anime SET [property] = [value] WHERE (id = [animeId])",
+        "delete-watchlist-animes": "DELETE FROM WatchlistContent WHERE (animeId = [animeId])",
         "delete-content": "DELETE FROM [table] WHERE ((animeId = [animeId]) AND (id = [id]))",
         "delete-main": `DELETE FROM [table] WHERE (id = [id])`,
     }

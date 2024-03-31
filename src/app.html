@@ -4,8 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Ani-Track or Whatever</title>
+
     <link rel="stylesheet" href="css/main.css">
+
     <script type="text/javascript" defer src="js/renderer.js"></script>
     <script type="text/javascript" defer src="js/wheel.js"></script>
 </head>
@@ -14,10 +17,10 @@
     <div id="anime-popup" class="--popup">
         <div class="-title">
             <div class="-title-disp"">
-                ANIME TITLE
+            ANIME TITLE
             </div>
         </div>
-        <div class="-rating-window">
+        <div class=" -rating-window">
             <div style="float: left;">
                 <div>
                     <span id="rated-label" style="color: #d7d5d5b1; padding-left: 2%;">Unrated</span>
@@ -26,7 +29,7 @@
                     </span>
                 </div>
             </div>
-            
+
             <div class="-rating">
                 <input type="checkbox">
                 Completed
@@ -39,7 +42,7 @@
             <th id="watchlist-box">
                 <div class="-select-title">
                     Lists
-                    <div class="-selection -selection-nohover no-highlight">
+                    <div class="-selection -selection-plusbtn no-highlight">
                         <button class="-de-select -addrole">+</button>
                     </div>
                 </div>
@@ -48,7 +51,7 @@
             <th id="tag-box">
                 <div class="-select-title">
                     Tags
-                    <div class="-selection -selection-nohover no-highlight">
+                    <div class="-selection -selection-plusbtn no-highlight">
                         <button class="-de-select -addrole">+</button>
                     </div>
                 </div>
@@ -57,7 +60,7 @@
             <th id="recommender-box">
                 <div class="-select-title">
                     People
-                    <div class="-selection -selection-nohover no-highlight">
+                    <div class="-selection -selection-plusbtn no-highlight">
                         <button class="-de-select -addrole">+</button>
                     </div>
                 </div>
@@ -80,7 +83,7 @@
                     <div class="left">
                         <div class="left-c1">
                             RESULTS
-                        </div> 
+                        </div>
                         <span></span>
                     </div>
                     <div class="collap-right hidden">
@@ -144,7 +147,7 @@
             HOME
             <button id="return-home" class="btn-style hidden">return home</button>
         </div>
-        
+
         <div id="page">
             <div id="home" class="tab ">
                 <div class="list-tab">
@@ -155,10 +158,10 @@
                         <div class="left">
                             <div class="left-c1">
                                 CURRENTLY WATCHING
-                            </div> 
+                            </div>
                             <span></span>
                         </div>
-                        <div class="collap-right hidden">
+                        <div id="watching-content" class="collap-right hidden">
                             <br>
                         </div>
                     </div>
@@ -171,7 +174,7 @@
                         <div class="left">
                             <div class="left-c1">
                                 WATCHLISTS
-                            </div> 
+                            </div>
                             <span></span>
                         </div>
                         <div id="watchlists-content" class="collap-right hidden">
@@ -187,7 +190,7 @@
                         <div class="left">
                             <div class="left-c1">
                                 TAGS
-                            </div> 
+                            </div>
                             <span></span>
                         </div>
                         <div id="tags-content" class="collap-right hidden">
@@ -203,7 +206,7 @@
                         <div class="left">
                             <div class="left-c1">
                                 RECOMMENDERS
-                            </div> 
+                            </div>
                             <span></span>
                         </div>
                         <div id="recommenders-content" class="collap-right hidden">
@@ -229,7 +232,7 @@
                     <th>
                         <div class="-select-title">
                             Genres
-                            <div class="-selection -selection-nohover no-highlight">
+                            <div class="-selection -selection-plusbtn no-highlight">
                                 <button class="-de-select -addrole">+</button>
                             </div>
                         </div>
@@ -238,7 +241,7 @@
                     <th>
                         <div class="-select-title">
                             Tags
-                            <div class="-selection -selection-nohover no-highlight">
+                            <div class="-selection -selection-plusbtn no-highlight">
                                 <button class="-de-select -addrole">+</button>
                             </div>
                         </div>
@@ -284,7 +287,7 @@
                     (recommender breakdown pie chart)
                 </div>
             </div>
-            
+
             <div id="view-watchlist" class="tab hidden">
                 <div class="list-tab no-highlight">
                     <div class="block" style="float: right; width: 50%;">
@@ -294,7 +297,7 @@
                         <div class="left">
                             <div class="left-c1">
                                 ANIMES ON THIS LIST
-                            </div> 
+                            </div>
                             <span></span>
                         </div>
                         <div id="view-watchlist-animecontent" class="collap-right hidden">
