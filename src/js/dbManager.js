@@ -69,7 +69,7 @@ let queries = {
     },
 
     "insert": {
-        "anime": "INSERT OR IGNORE INTO Anime (id) VALUES ([animeId])",
+        "anime": `INSERT OR IGNORE INTO Anime (id, genres) VALUES ([animeId], "[genres]")`,
         "content": "INSERT OR IGNORE INTO [table-content] (id, animeId) VALUES ([id], [animeId])",
         "element": `INSERT OR IGNORE INTO [table] (name) VALUES ("[name]")`,
     },
@@ -118,6 +118,14 @@ module.exports.handleQuery = async function (_, channel, query, args) {
             })
         })
     } else {
-        db.run(updatedQuery)
+        return new Promise((resolve, reject) => {
+            db.run(updatedQuery, (err, row) => {
+                if (!err) {
+                    resolve(row)
+                } else {
+                    reject(err)
+                }
+            })
+        })
     }
 }

@@ -29,7 +29,7 @@ const createWindow = () => {
 
     root.webContents.once('dom-ready', async () => {
         sendVersion()
-        db.init()
+        await db.init()
         wrapMessage("render")
     })
 

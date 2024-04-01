@@ -1,4 +1,5 @@
 const { ipcRenderer } = require("electron");
+const { watch } = require("original-fs");
 window.$ = window.jQuery = require('../node_modules/jquery/dist/jquery.min.js');
 
 ipcRenderer.on("version", (_, ver) => {
@@ -18,6 +19,57 @@ let t4 = 0.65
 let currentRating = 0
 let watchCodes = ["NOT WATCHING", "CURRENTLY WATCHING", "COMPLETED"]
 let opening = false
+
+// genres that appear in anilist
+let genres = {
+    "ac": "Action",
+    "ad": "Adventure",
+    "dr": "Drama", 
+    "ec": "Ecchi",
+    "fa": "Fantasy",
+    "he": "Hentai",
+    "ho": "Horror",
+    "ma": "Mahou Shoujo",
+    "me": "Mecha",
+    "mu": "Music",
+    "my": "Mystery",
+    "ps": "Psychological",
+    "ro": "Romance",
+    "sc": "Sci-Fi",
+    "sl": "Slice of Life",
+    "sp": "Sports",
+    "su": "Supernatural",
+    "th": "Thriller"
+}
+
+function encodeGenres(arr) {
+    let _str = ""
+
+    arr.forEach(genre => {
+        let debug = "$noword$"
+        for (abbrev in genres) {
+            if (genres[abbrev].toLowerCase() === genre.toLowerCase()) {
+                _str += `${abbrev}.`
+                debug = "$word$"
+                break
+            }
+
+            if (debug === "$noword") {
+                console.log("can't find translation for abbrev", abbrev)
+            }
+        }
+    })
+
+    return _str.slice(0, -1)
+}
+
+function decodeGenres(_str) {
+    let arr = []
+    _str.split(".").forEach(abbrev => {
+        arr.push(genres[abbrev])
+    })
+    return arr
+}
 
 function hitEnter(e) {
     if (!e) e = window.event
@@ -133,13 +185,21 @@ function loadRoleIcons() {
     })
 }
 
-async function loadAnimeStatuses(animeId) {
-    let watchCode = await ipcRenderer.invoke("queryDB", "get", "watch-code", {id: animeId})
-    let rating = await ipcRenderer.invoke("queryDB", "get", "rating", {id: animeId})
+function insertAnime(id) {
 
+}
+
+async function loadAnimeStatuses(animeId) {
     let popup = $("#anime-popup")
 
-    if (watchCode.length > 0) $(popup).find(".-watching").text(watchCodes[watchCode[0].watching || 0])
+    let watchCode = await ipcRenderer.invoke("queryDB", "get", "watch-code", {id: animeId})
+    if (watchCode.length > 0) {
+        $(popup).find(".-watching").text(watchCodes[watchCode[0].watching || 0])
+    } else {
+        $(popup).find(".-watching").text(watchCodes[0])
+    }
+
+    let rating = await ipcRenderer.invoke("queryDB", "get", "rating", {id: animeId})
     if (rating.length > 0 && rating[0].rating != null && rating[0].rating > 0) {
         popup.find("#rated-label").addClass("hidden")
         popup.find("span:not(#rated-label)").removeClass("hidden").text(`★${rating[0].rating}/10`)
@@ -149,6 +209,32 @@ async function loadAnimeStatuses(animeId) {
         popup.find("#rated-label").removeClass("hidden")
         popup.find("span:not(#rated-label)").addClass("hidden")
     }
+
+    // ipcRenderer.invoke("queryDB", "get", "watch-code", {id: animeId}).then(watchCode => {
+    //     console.log(watchCode)
+    //     if (watchCode.length > 0) {
+    //         $(popup).find(".-watching").text(watchCodes[watchCode[0].watching || 0])
+    //     } else {
+    //         $(popup).find(".-watching").text(watchCodes[0])
+    //     }
+    // }).catch(e => {
+    //     console.log("error in getting watch-code:", e)
+    // })
+    
+    // ipcRenderer.invoke("queryDB", "get", "rating", {id: animeId}).then(rating => {
+    //     console.log(rating)
+    //     if (rating.length > 0 && rating[0].rating != null && rating[0].rating > 0) {
+    //         popup.find("#rated-label").addClass("hidden")
+    //         popup.find("span:not(#rated-label)").removeClass("hidden").text(`★${rating[0].rating}/10`)
+    
+    //         $("#rating-middle").css("left", `${rating[0].rating * 10}%`)
+    //     } else {
+    //         popup.find("#rated-label").removeClass("hidden")
+    //         popup.find("span:not(#rated-label)").addClass("hidden")
+    //     }
+    // }).catch(e => {
+    //     console.log("error in getting rating:", e)
+    // })
 }
 
 async function refreshViewWatchlist(table) {
@@ -169,9 +255,11 @@ async function refreshViewWatchlist(table) {
     let animes = []
     await Promise.all(rows.map(async (row) => {
         let data = await ipcRenderer.invoke("queryAnilist", "specifics", row.id)
-        // console.log(data)
-        html += `<div class="list-tab no-highlight --open-anime" id="${row.id}" style="color: #d7d5d5b1;">${data.title}</div>`
-        animes.push([data.title, row.id])
+        if (data) {
+            // console.log(data)
+            html += `<div class="list-tab no-highlight --open-anime" id="${row.id}" style="color: #d7d5d5b1;">${data.title}</div>`
+            animes.push([data.title, row.id])
+        } 
     }))
 
     // console.log(html)
@@ -189,6 +277,10 @@ async function openAnime(event) {
     let animeId = parseInt(event.target.id)
 
     let data = await ipcRenderer.invoke("queryAnilist", "specifics", animeId)
+    if (!data) {
+        opening = false
+        return
+    }
 
     // fill anime popup with specifics
     let popup = $("#anime-popup")[0]
@@ -196,6 +288,7 @@ async function openAnime(event) {
     $(popup).find(".-desc").html(data.description)
     $(popup).find("img").attr('src', data.image)
     $(popup).data("animeId", animeId)
+    $(popup).data("genres", encodeGenres(data.genres))
 
     let genresHTML = ""
     data.genres.forEach(genre => {
@@ -235,7 +328,9 @@ async function loadCurrentlyWatching() {
     let rows = await ipcRenderer.invoke("queryDB", "get", "watching", {"watchCode": 1})
     await Promise.all(rows.map(async (row) => {
         let data = await ipcRenderer.invoke("queryAnilist", "specifics", row.id)
-        html += `<div id="${row.id}" class="list-tab no-highlight --open-anime" style="color: #d7d5d5b1;">${data.title.toUpperCase()}</div>`
+        if (data) {
+            html += `<div id="${row.id}" class="list-tab no-highlight --open-anime" style="color: #d7d5d5b1;">${data.title.toUpperCase()}</div>`
+        }
     }))
 
     $(`#watching-content`).html(`<br>${html}`)
@@ -405,14 +500,21 @@ $(".-watch-code").on("click", async (event) => {
     console.log(index)
 
     let animeId = $("#anime-popup").data("animeId")
+    let animeGenres = $("#anime-popup").data("genres")
+
+    let args0 = { "animeId": animeId, "genres": animeGenres }
+    await ipcRenderer.invoke("queryDB", "insert", "anime", args0)
+
     let args = {
         "animeId": animeId, 
         "property": "watching",
         "value": index
     }
-    ipcRenderer.invoke("queryDB", "ud", "update", args)
-    loadAnimeStatuses(animeId)
-    loadCurrentlyWatching()
+    
+    await ipcRenderer.invoke("queryDB", "ud", "update", args)
+    console.log('shoulda updated')
+    await loadAnimeStatuses(animeId)
+    await loadCurrentlyWatching()
 
     closePopup("#watching-popup")
 })
@@ -424,6 +526,11 @@ $(document).on("click", ".outlined", async function() {
 
     // update the rating in the list
     let animeId = $("#anime-popup").data("animeId")
+    let animeGenres = $("#anime-popup").data("genres")
+
+    let args0 = { "animeId": animeId, "genres": animeGenres }
+    await ipcRenderer.invoke("queryDB", "insert", "anime", args0)
+
     let args = {
         "animeId": animeId,
         "property": "rating",
@@ -469,9 +576,10 @@ $(document).on("click", ".-delete-role", async function (event) {
 
 $(document).on("click", ".-addrole-internal", async function (event) {
     let [category, value, categoryId, animeId] = event.target.id.split("$separator$")
+    let animeGenres = $("#anime-popup").data("genres")
 
-    let args1 = { "animeId": animeId }
-    await ipcRenderer.invoke("queryDB", "insert", "anime", args1)
+    let args0 = { "animeId": animeId, "genres": animeGenres }
+    await ipcRenderer.invoke("queryDB", "insert", "anime", args0)
 
     let args2 = {
         "table-content": `${category}Content`,
