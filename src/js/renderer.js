@@ -10,13 +10,14 @@ ipcRenderer.on("render", render)
 
 let categories = ["watchlists", "tags", "recommenders"]
 let popups = [] // emulate a stack for layered popups
-let __openClickFlag = false
+// let __openClickFlag = false
 let managing = ""
 let currentViewing = ""
 let o4 = 0.35
 let t4 = 0.65
 let currentRating = 0
 let watchCodes = ["NOT WATCHING", "CURRENTLY WATCHING", "COMPLETED"]
+let opening = false
 
 function hitEnter(e) {
     if (!e) e = window.event
@@ -142,7 +143,7 @@ async function loadAnimeStatuses(animeId) {
     if (rating.length > 0 && rating[0].rating != null && rating[0].rating > 0) {
         popup.find("#rated-label").addClass("hidden")
         popup.find("span:not(#rated-label)").removeClass("hidden").text(`★${rating[0].rating}/10`)
-        
+
         $("#rating-middle").css("left", `${rating[0].rating * 10}%`)
     } else {
         popup.find("#rated-label").removeClass("hidden")
@@ -180,7 +181,11 @@ async function refreshViewWatchlist(table) {
 }
 
 async function openAnime(event) {
-    __openClickFlag = true
+    if (opening) return
+    opening = true
+
+    event.stopPropagation()
+    // __openClickFlag = true
     let animeId = parseInt(event.target.id)
 
     let data = await ipcRenderer.invoke("queryAnilist", "specifics", animeId)
@@ -209,6 +214,7 @@ async function openAnime(event) {
 
     // open
     openAsPopup(popup)
+    opening = false
 }
 
 async function loadCategory(tabName) {
@@ -287,17 +293,22 @@ $(".-rating").on("click", () => {
 })
 
 $(".collapsible").on("click", (event) => {
-    if ($(event.target).is("input") || $(event.target).hasClass("collap-right")) {
+    let target = $(event.target)
+
+    if (target.is("input") || target.hasClass("collap-right")) {
         return
     }
 
-    // hacky workaround to event bubbling
-    setTimeout(() => {
-        if (__openClickFlag) {
-            __openClickFlag = false
-            return
-        }
+    if (target.hasClass("--view-watchlist")) {
+        event.stopPropagation()
+        switchTab("View Watchlist")
 
+        let table = $(this).text().trim().toUpperCase()
+        currentViewing = table
+        refreshViewWatchlist(table)
+    } else if (target.hasClass("--open-anime")) {
+        return
+    } else {
         let collapsible = $(event.target).closest(".collapsible")
         let hidden = collapsible.find(".hidden")
         let svg = collapsible.find(".left").find("span")
@@ -307,7 +318,7 @@ $(".collapsible").on("click", (event) => {
         } else {
             toggleCollapsible(svg, hidden, false)
         }
-    }, 125)
+    }    
 })
 
 $(".switch-tab").on("click", (event) => {
@@ -328,7 +339,9 @@ $(".popup-exit").on("click", (event) => {
 })
 
 $(".manage-btn").on("click", (event) => {
-    __openClickFlag = true
+    // __openClickFlag = true
+    event.stopPropagation()
+
     let title = $(event.target).closest(".list-tab").find(".collapsible").find(".left-c1").text().trim()
 
     $(`#manage-${title.toLowerCase()}`).removeClass("hidden")
@@ -480,15 +493,6 @@ $(document).on("click", ".-addrole-internal", async function (event) {
     } else {
         console.log("found, not adding")
     }
-})
-
-$(document).on("click", ".--view-watchlist", async function () {
-    __openClickFlag = true
-    switchTab("View Watchlist")
-
-    let table = $(this).text().trim().toUpperCase()
-    currentViewing = table
-    refreshViewWatchlist(table)
 })
 
 $(document).on("click", ".--open-anime", openAnime)
