@@ -8,6 +8,7 @@
 @import url(one-button.css);
 @import url(one-entry.css);
 @import url(manage.css);
+@import url(rating.css);
 
 :root {
     --bg-color: #191d23;

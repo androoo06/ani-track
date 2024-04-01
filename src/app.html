@@ -21,26 +21,26 @@
             </div>
         </div>
         <table class="-manage-table">
-            <th class="-rating-tab">
+            <th class="-rating-tab no-highlight">
                 <span id="rated-label" class="-rating --center" style="color: #d7d5d5b1;">UNRATED</span>
                 <span class="-rating --center hidden">
                     10★
                 </span>
             </th>
             <th class="-watching-tab">
-                <button class="btn-style">START WATCHING</button>
-                <div class="--center hidden">
+                <button class="btn-style -watching">START WATCHING</button>
+                <div class="--center hidden -watching no-highlight">
                     WATCHING
                 </div>
             </th>
-            <th class="-completed-tab">
+            <!-- <th class="-completed-tab">
                 <input id="completed-checkbox "type="checkbox">
                 <label class="--center" for="completed-checkbox">COMPLETED</label>
-            </th>
+            </th> -->
         </table>
         <button class="popup-exit" style="background: url(assets/media/x.svg);"></button>
         <img>
-        <div class="-desc">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Voluptatum ex, molestiae saepe fuga vel est. Consectetur commodi, cumque laudantium, error ducimus delectus veritatis ab voluptatum accusamus soluta qui numquam fugiat.</div>
+        <div class="-desc"></div>
         <table class="-role-table">
             <th id="watchlist-box">
                 <div class="-select-title">
@@ -133,16 +133,47 @@
         <input class="-search-bar" type="text" placeholder="Enter new name">
     </div>
 
-    <div id="rating-popup" class="-one-entry-popup --popup">
-        <button class="popup-exit" style="background: url(assets/media/x.svg);"></button>
-        <div class="-title">RATE THIS ANIME</div>
-        <input class="-search-bar" type="text" placeholder="Enter star rating out of 10" name="search">
-    </div>
-
     <div id="manage-popup" class="--popup">
         <button class="popup-exit" style="background: url(assets/media/x.svg);"></button>
         <button class="btn-style">VIEW </button>
         <button class="btn-style" style="bottom: 0;">REMOVE</button>
+    </div>
+
+    <div id="rating-popup" class="--popup">
+        <button class="popup-exit" style="background: url(assets/media/x.svg); z-index: 10;"></button>
+        <div id="rating-title" class="no-highlight">
+            <b style="color:#d7d5d5b1;">RATE&emsp;</b>
+            <span style="color: white;">ANIME TITLE</span>
+        </div>
+        <div id="rating-content">
+            <table id="rating-bottom" style="z-index: 0;">
+                <th><img class="star" src="assets/media/filledStar.svg"></th>
+                <th><img class="star" src="assets/media/filledStar.svg"></th>
+                <th><img class="star" src="assets/media/filledStar.svg"></th>
+                <th><img class="star" src="assets/media/filledStar.svg"></th>
+                <th><img class="star" src="assets/media/filledStar.svg"></th>
+                <th><img class="star" src="assets/media/filledStar.svg"></th>
+                <th><img class="star" src="assets/media/filledStar.svg"></th>
+                <th><img class="star" src="assets/media/filledStar.svg"></th>
+                <th><img class="star" src="assets/media/filledStar.svg"></th>
+                <th><img class="star" src="assets/media/filledStar.svg"></th>
+            </table>
+
+            <div id="rating-middle" style="z-index: 1;"></div>
+
+            <table id="rating-top" style="z-index: 2;">
+                <th><img class="outlined star" data-index="0" src="assets/media/outlineStar.svg"></th>
+                <th><img class="outlined star" data-index="1" src="assets/media/outlineStar.svg"></th>
+                <th><img class="outlined star" data-index="2" src="assets/media/outlineStar.svg"></th>
+                <th><img class="outlined star" data-index="3" src="assets/media/outlineStar.svg"></th>
+                <th><img class="outlined star" data-index="4" src="assets/media/outlineStar.svg"></th>
+                <th><img class="outlined star" data-index="5" src="assets/media/outlineStar.svg"></th>
+                <th><img class="outlined star" data-index="6" src="assets/media/outlineStar.svg"></th>
+                <th><img class="outlined star" data-index="7" src="assets/media/outlineStar.svg"></th>
+                <th><img class="outlined star" data-index="8" src="assets/media/outlineStar.svg"></th>
+                <th><img class="outlined star" data-index="9" src="assets/media/outlineStar.svg"></th>
+            </table>
+        </div>
     </div>
 
     <div id="main">

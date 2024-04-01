@@ -13,6 +13,9 @@ let popups = [] // emulate a stack for layered popups
 let __openClickFlag = false
 let managing = ""
 let currentViewing = ""
+let o4 = 0.35
+let t4 = 0.65
+let currentRating = 0
 
 function hitEnter(e) {
     if (!e) e = window.event
@@ -210,6 +213,80 @@ async function loadCurrentlyWatching() {
     $(`#watching-content`).html(`<br>${html}`)
 }
 
+function roundToQuarter(number) {
+    if (number < 0.2) return 0
+    if (number < o4) return 0.25
+    if (number < 0.5) return 0.5
+    if (number < t4) return 0.75
+    return 1
+}
+
+function fixPercent(n) {
+    if (n == 0.25) return o4
+    if (n == 0.75) return t4
+
+    return n
+}
+
+function moveBar(e, target) {
+    var rect = target.getBoundingClientRect()
+    var x = e.clientX - rect.left //x position within the element
+
+    let rawPercent = x/rect.width
+    let roundedPercent = roundToQuarter(rawPercent)
+    let finalPercent = fixPercent(roundedPercent) * 10
+    
+    let rawShift = parseInt(target.getAttribute("data-index"))
+    let scaledShift = rawShift * 10
+    let finalShift = scaledShift + finalPercent
+
+    currentRating = roundedPercent + rawShift
+    $("#rating-middle").css("left", `${finalShift}%`)
+}
+
+function connectRatePopup(e) {
+    let target = document.elementFromPoint(e.clientX, e.clientY)
+    if (target.nodeName == "IMG" && target.classList.contains("outlined")) {
+        moveBar(e, target)
+    }
+}
+
+$(".-watching").on("click", (event) => {
+    let type = event.target.nodeName.toLowerCase()
+
+    $(event.target).addClass("hidden")
+    $(`.-watching:not("${type}")`).removeClass("hidden")
+
+    if (type == "button") {
+        // start-watching was clicked
+        // add to currently watching
+        // remove from all WLs (and hide the watchlist + button)
+
+        console.log("start watching")
+
+    } else {
+        // check if the text is "watched" or "watching"
+        // if watching:
+            // stop watching
+            // remove from currently watching
+            // re-enable + button
+
+        console.log("stop watching")
+
+    }
+})
+
+$(".-rating").on("click", () => {
+    
+    let title = $("#anime-popup").find(".-title-disp").text()
+    $("#rating-title").find("span").text(title)
+    openAsPopup($("#rating-popup"))
+
+    // connected to .outlined click event 
+    document.addEventListener('mousemove', connectRatePopup, {passive: false})
+
+})
+
 $(".collapsible").on("click", (event) => {
     if ($(event.target).is("input") || $(event.target).hasClass("collap-right")) {
         return
@@ -309,6 +386,14 @@ $("#start-anime").on("click", async () => {
     loadCurrentlyWatching()
 
     closePopup($("#wheel-popup")[0])
+})
+
+$(document).on("click", ".outlined", function() {
+    // connected to  .-rating click event
+    document.removeEventListener("mousemove", connectRatePopup, { passive: false })
+    closePopup($("#rating-popup"))
+
+    // update the rating in the list
 })
 
 $(document).on("click", ".-delete-role", async function (event) {
