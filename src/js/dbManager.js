@@ -55,28 +55,30 @@ module.exports.close = function () {
 
 let queries = {
     "get": {
-        "id": `SELECT (id) FROM [table] WHERE (name = "[name]")`,
         "all": "SELECT * FROM [table]",
         "all-except": "SELECT * from [table] WHERE id IN  (SELECT id from [table] EXCEPT SELECT id FROM [table-content] WHERE animeid = [animeId])",
-        "all-in": `SELECT (name) FROM [table] WHERE id IN (SELECT (id) FROM [table-content] WHERE (animeId = [animeId]))`,
+        "all-in": "SELECT (name) FROM [table] WHERE id IN (SELECT (id) FROM [table-content] WHERE (animeId = [animeId]))",
         "content": "SELECT A.* from Anime A, [table-content] t WHERE ((A.id = t.animeId) AND (t.id = [tableId]))",
-        "watching": "SELECT (id) FROM Anime WHERE (watching = 1)",
+        "exact": "SELECT * FROM [table-content] WHERE (id = [id]) AND (animeId = [animeId])",
+        "exists": "SELECT animeId from TagContent UNION SELECT animeid FROM WatchlistContent UNION SELECT animeId FROM RecommenderContent",
         "filtered": "SELECT A.* from Anime A [filterProperties]",
-        "exact": `SELECT * FROM [table-content] WHERE (id = [id]) AND (animeId = [animeId])`,
-        "exists": `SELECT animeId from TagContent UNION SELECT animeid FROM WatchlistContent UNION SELECT animeId FROM RecommenderContent`,
+        "id": `SELECT (id) FROM [table] WHERE (name = "[name]")`,
+        "rating": "SELECT (rating) from Anime WHERE (id = [id])",
+        "watching": "SELECT (id) FROM Anime WHERE (watching = [watchCode])",
+        "watch-code": "SELECT (watching) FROM Anime WHERE (id = [id])",
     },
 
     "insert": {
-        "element": `INSERT OR IGNORE INTO [table] (name) VALUES ("[name]")`,
         "anime": "INSERT OR IGNORE INTO Anime (id) VALUES ([animeId])",
         "content": "INSERT OR IGNORE INTO [table-content] (id, animeId) VALUES ([id], [animeId])",
+        "element": `INSERT OR IGNORE INTO [table] (name) VALUES ("[name]")`,
     },
 
     "ud": {
-        "update": "UPDATE Anime SET [property] = [value] WHERE (id = [animeId])",
-        "delete-watchlist-animes": "DELETE FROM WatchlistContent WHERE (animeId = [animeId])",
         "delete-content": "DELETE FROM [table] WHERE ((animeId = [animeId]) AND (id = [id]))",
         "delete-main": `DELETE FROM [table] WHERE (id = [id])`,
+        "delete-watchlist-animes": "DELETE FROM WatchlistContent WHERE (animeId = [animeId])",
+        "update": "UPDATE Anime SET [property] = [value] WHERE (id = [animeId])",
     }
 }
 

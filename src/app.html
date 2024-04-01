@@ -24,19 +24,15 @@
             <th class="-rating-tab no-highlight">
                 <span id="rated-label" class="-rating --center" style="color: #d7d5d5b1;">UNRATED</span>
                 <span class="-rating --center hidden">
-                    10★
+                    ★10/10
                 </span>
             </th>
-            <th class="-watching-tab">
-                <button class="btn-style -watching">START WATCHING</button>
-                <div class="--center hidden -watching no-highlight">
-                    WATCHING
-                </div>
-            </th>
-            <!-- <th class="-completed-tab">
-                <input id="completed-checkbox "type="checkbox">
-                <label class="--center" for="completed-checkbox">COMPLETED</label>
+            <!-- <th class="-watching-label">
+                <div class="--center no-highlight" style="color: #d7d5d5b1;">NOT WATCHING</div>
             </th> -->
+            <th class="-watching-tab">
+                <button class="btn-style -watching">NOT WATCHING</button>
+            </th>
         </table>
         <button class="popup-exit" style="background: url(assets/media/x.svg);"></button>
         <img>
@@ -173,6 +169,18 @@
                 <th><img class="outlined star" data-index="8" src="assets/media/outlineStar.svg"></th>
                 <th><img class="outlined star" data-index="9" src="assets/media/outlineStar.svg"></th>
             </table>
+        </div>
+    </div>
+
+    <div id="watching-popup" class="--popup">
+        <button class="popup-exit" style="background: url(assets/media/x.svg);"></button>
+        <div class="-title no-highlight">
+            SELECT A STATUS FOR THIS ANIME
+        </div>
+        <div class="-content">
+            <div class="-watch-code no-highlight" data-index="0">NOT WATCHING</div>
+            <div class="-watch-code no-highlight" data-index="1">CURRENTLY WATCHING</div>
+            <div class="-watch-code no-highlight" data-index="2">COMPLETED</div>
         </div>
     </div>
 

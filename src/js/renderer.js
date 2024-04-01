@@ -16,6 +16,7 @@ let currentViewing = ""
 let o4 = 0.35
 let t4 = 0.65
 let currentRating = 0
+let watchCodes = ["NOT WATCHING", "CURRENTLY WATCHING", "COMPLETED"]
 
 function hitEnter(e) {
     if (!e) e = window.event
@@ -131,6 +132,24 @@ function loadRoleIcons() {
     })
 }
 
+async function loadAnimeStatuses(animeId) {
+    let watchCode = await ipcRenderer.invoke("queryDB", "get", "watch-code", {id: animeId})
+    let rating = await ipcRenderer.invoke("queryDB", "get", "rating", {id: animeId})
+
+    let popup = $("#anime-popup")
+
+    if (watchCode.length > 0) $(popup).find(".-watching").text(watchCodes[watchCode[0].watching || 0])
+    if (rating.length > 0 && rating[0].rating != null && rating[0].rating > 0) {
+        popup.find("#rated-label").addClass("hidden")
+        popup.find("span:not(#rated-label)").removeClass("hidden").text(`★${rating[0].rating}/10`)
+        
+        $("#rating-middle").css("left", `${rating[0].rating * 10}%`)
+    } else {
+        popup.find("#rated-label").removeClass("hidden")
+        popup.find("span:not(#rated-label)").addClass("hidden")
+    }
+}
+
 async function refreshViewWatchlist(table) {
     if (table === "") return;
 
@@ -182,6 +201,9 @@ async function openAnime(event) {
     })
     $("#genre-box").find(".-select-content").html(genresHTML)
 
+    // load watching and rating status
+    await loadAnimeStatuses(animeId)
+    
     // preload existing role icons
     loadRoleIcons()
 
@@ -204,7 +226,7 @@ async function loadCategory(tabName) {
 
 async function loadCurrentlyWatching() {
     let html = ""
-    let rows = await ipcRenderer.invoke("queryDB", "get", "watching", {})
+    let rows = await ipcRenderer.invoke("queryDB", "get", "watching", {"watchCode": 1})
     await Promise.all(rows.map(async (row) => {
         let data = await ipcRenderer.invoke("queryAnilist", "specifics", row.id)
         html += `<div id="${row.id}" class="list-tab no-highlight --open-anime" style="color: #d7d5d5b1;">${data.title.toUpperCase()}</div>`
@@ -251,40 +273,17 @@ function connectRatePopup(e) {
     }
 }
 
-$(".-watching").on("click", (event) => {
-    let type = event.target.nodeName.toLowerCase()
-
-    $(event.target).addClass("hidden")
-    $(`.-watching:not("${type}")`).removeClass("hidden")
-
-    if (type == "button") {
-        // start-watching was clicked
-        // add to currently watching
-        // remove from all WLs (and hide the watchlist + button)
-
-        console.log("start watching")
-
-    } else {
-        // check if the text is "watched" or "watching"
-        // if watching:
-            // stop watching
-            // remove from currently watching
-            // re-enable + button
-
-        console.log("stop watching")
-
-    }
+$(".-watching").on("click", () => {
+    openAsPopup($("#watching-popup"))
 })
 
 $(".-rating").on("click", () => {
-    
     let title = $("#anime-popup").find(".-title-disp").text()
     $("#rating-title").find("span").text(title)
     openAsPopup($("#rating-popup"))
 
     // connected to .outlined click event 
     document.addEventListener('mousemove', connectRatePopup, {passive: false})
-
 })
 
 $(".collapsible").on("click", (event) => {
@@ -388,12 +387,37 @@ $("#start-anime").on("click", async () => {
     closePopup($("#wheel-popup")[0])
 })
 
-$(document).on("click", ".outlined", function() {
+$(".-watch-code").on("click", async (event) => {
+    let index = parseInt($(event.target).data("index"))
+    console.log(index)
+
+    let animeId = $("#anime-popup").data("animeId")
+    let args = {
+        "animeId": animeId, 
+        "property": "watching",
+        "value": index
+    }
+    ipcRenderer.invoke("queryDB", "ud", "update", args)
+    loadAnimeStatuses(animeId)
+    loadCurrentlyWatching()
+
+    closePopup("#watching-popup")
+})
+
+$(document).on("click", ".outlined", async function() {
     // connected to  .-rating click event
     document.removeEventListener("mousemove", connectRatePopup, { passive: false })
     closePopup($("#rating-popup"))
 
     // update the rating in the list
+    let animeId = $("#anime-popup").data("animeId")
+    let args = {
+        "animeId": animeId,
+        "property": "rating",
+        "value": currentRating
+    }
+    await ipcRenderer.invoke("queryDB", "ud", "update", args)
+    loadAnimeStatuses(animeId)
 })
 
 $(document).on("click", ".-delete-role", async function (event) {

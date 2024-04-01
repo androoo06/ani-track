@@ -9,6 +9,7 @@
 @import url(one-entry.css);
 @import url(manage.css);
 @import url(rating.css);
+@import url(watching.css);
 
 :root {
     --bg-color: #191d23;

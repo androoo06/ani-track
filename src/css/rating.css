@@ -11,7 +11,7 @@
     border-radius: 2vh;
     overflow: hidden;
 
-    z-index: 3;
+    z-index: 99;
     display: none;
 }
 
