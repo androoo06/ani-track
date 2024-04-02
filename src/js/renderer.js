@@ -377,6 +377,45 @@ function filterName(rows, name) {
     return filtered
 }
 
+function getFilterQuery() {
+    let queryStr = ""
+
+    // generate filters query (min/max rating, tags)    
+    if (filters.__tagIds.length > 0) {
+        queryStr += "SELECT animeId FROM TagContent t WHERE "
+        
+        for (ti in filters.__tagIds) {
+            queryStr += `t.id = ${filters.__tagIds[ti]} OR `
+        }
+        
+        queryStr = queryStr.slice(0, -4)
+        
+        if (filters['min-rating'] !== null || filters['max-rating'] !== null) {
+            queryStr += " UNION SELECT id FROM Anime a WHERE "
+        }
+    } else{
+        queryStr += "SELECT id FROM Anime a"
+
+        if (filters['min-rating'] !== null || filters['max-rating'] !== null) {
+            queryStr += " WHERE "
+        }
+    }
+
+    if (filters['min-rating'] !== null) {
+        queryStr += `a.rating >= ${filters['min-rating']}`
+    }
+
+    if (filters['min-rating'] !== null && filters['max-rating'] !== null) {
+        queryStr += " AND "
+    }
+
+    if (filters['max-rating'] !== null) {
+        queryStr += `a.rating <= ${filters['max-rating']}`
+    }
+
+    return queryStr
+}
+
 $(".-watching").on("click", () => {
     openAsPopup($("#watching-popup"))
 })
@@ -461,7 +500,7 @@ $(".-addrole").on("click", () => {
     openAsPopup($("#role-popup")[0])
 })
 
-$(".-ap-role").on("click", async () => {
+$(".-ap-role").on("click", async (event) => {
     // load the popup with clickables
     let tbl = getCategory(event.target)
 
@@ -551,40 +590,8 @@ $(".-watch-code").on("click", async (event) => {
 $("#apply-filters").on("click", async (event) => {
     // console.log(filters)
 
-    let queryStr = ""
-
-    // generate filters query (min/max rating, tags)    
-    if (filters.__tagIds.length > 0) {
-        queryStr += "SELECT animeId FROM TagContent t WHERE "
-        
-        for (ti in filters.__tagIds) {
-            queryStr += `t.id = ${filters.__tagIds[ti]} OR `
-        }
-        
-        queryStr = queryStr.slice(0, -4)
-        
-        if (filters['min-rating'] !== null || filters['max-rating'] !== null) {
-            queryStr += " UNION SELECT id FROM Anime a WHERE "
-        }
-    } else{
-        queryStr += "SELECT id FROM Anime a"
-
-        if (filters['min-rating'] !== null || filters['max-rating'] !== null) {
-            queryStr += " WHERE "
-        }
-    }
-
-    if (filters['min-rating'] !== null) {
-        queryStr += `a.rating >= ${filters['min-rating']}`
-    }
-
-    if (filters['min-rating'] !== null && filters['max-rating'] !== null) {
-        queryStr += " AND "
-    }
-
-    if (filters['max-rating'] !== null) {
-        queryStr += `a.rating <= ${filters['max-rating']}`
-    }
+    let queryStr = getFilterQuery()
+    console.log(queryStr)
 
     let args = {
         filterProperties: queryStr
@@ -635,7 +642,7 @@ $("#apply-filters").on("click", async (event) => {
     $("#filter-results").html(html)
 })
 
-$(document).on("click", ".-rating-filter", async function (event) {
+$(".-rating-filter").on("propertychange change keyup paste input", async function (event) {
     let n = parseInt(event.target.value)
     filters[event.target.id] = isNaN(n) ? null : n
 })
