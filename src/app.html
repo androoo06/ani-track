@@ -42,7 +42,7 @@
                 <div class="-select-title">
                     Lists
                     <div class="-selection -selection-plusbtn no-highlight">
-                        <button class="-de-select -addrole">+</button>
+                        <button class="-de-select -addrole -ap-role">+</button>
                     </div>
                 </div>
                 <div class="-select-content"></div>
@@ -266,6 +266,7 @@
                     HOME
                 </div>
             </div>
+
             <div id="history" class="tab hidden">
                 <div class="list-tab no-highlight">
                     FILTERS:
@@ -275,27 +276,27 @@
                         <div class="-select-title">
                             Genres
                             <div class="-selection -selection-plusbtn no-highlight">
-                                <button class="-de-select -addrole">+</button>
+                                <button class="-de-select -addrole -history-role">+</button>
                             </div>
                         </div>
-                        <div class="-select-content"></div>
+                        <div id="history-genres-content" class="-select-content"></div>
                     </th>
                     <th>
                         <div class="-select-title">
                             Tags
                             <div class="-selection -selection-plusbtn no-highlight">
-                                <button class="-de-select -addrole">+</button>
+                                <button class="-de-select -addrole -history-role">+</button>
                             </div>
                         </div>
-                        <div class="-select-content"></div>
+                        <div id="history-tags-content" class="-select-content"></div>
                     </th>
                     <th>
                         <div class="-select-title">
                             Rating
                         </div>
                         <div class="-select-content">
-                            <input type="text" placeholder="min rating">
-                            <input type="text" placeholder="max rating">
+                            <input class="-rating-filter" id="min-rating" type="text" placeholder="min rating">
+                            <input class="-rating-filter" id="max-rating" type="text" placeholder="max rating">
                         </div>
                     </th>
                     <th>
@@ -303,15 +304,24 @@
                             Search Title
                         </div>
                         <div class="-select-content">
-                            <input type="text" placeholder="title">
+                            <input class="-history-name-filter" type="text" placeholder="title">
                         </div>
                     </th>
                 </table>
+                <div class="list-tab no-highlight">
+                    <br>
+                    <div class="block" style="padding-left: 11.5%; width: 50%;">
+                        <button id="apply-filters" class="manage-btn-style btn-style">APPLY</button>
+                    </div>
+                    <br>
+                </div>
+                <br>
                 <div class="list-tab no-highlight">
                     <div>RESULTS:</div>
                     <div id="filter-results"></div>
                 </div>
             </div>
+
             <div id="data" class="tab hidden">
                 <div class="list-tab no-highlight">
                     Total Anime Completed:
@@ -363,7 +373,7 @@
                     <div style="text-align: center; color:#d7d5d5b1" id="not-enough-anime">
                         <br>
                         <br>
-                        You need at least 3 anime on this watchlist to spin the wheel.
+                        You need at least 3 animes on this watchlist to spin the wheel.
                     </div>
                 </div>
             </div>

@@ -61,7 +61,7 @@ let queries = {
         "content": "SELECT A.* from Anime A, [table-content] t WHERE ((A.id = t.animeId) AND (t.id = [tableId]))",
         "exact": "SELECT * FROM [table-content] WHERE (id = [id]) AND (animeId = [animeId])",
         "exists": "SELECT animeId from TagContent UNION SELECT animeid FROM WatchlistContent UNION SELECT animeId FROM RecommenderContent",
-        "filtered": "SELECT A.* from Anime A [filterProperties]",
+        "filtered": "SELECT * from Anime WHERE id IN ([filterProperties])",
         "id": `SELECT (id) FROM [table] WHERE (name = "[name]")`,
         "rating": "SELECT (rating) from Anime WHERE (id = [id])",
         "watching": "SELECT (id) FROM Anime WHERE (watching = [watchCode])",
@@ -69,7 +69,7 @@ let queries = {
     },
 
     "insert": {
-        "anime": `INSERT OR IGNORE INTO Anime (id, genres) VALUES ([animeId], "[genres]")`,
+        "anime": `INSERT OR IGNORE INTO Anime (id, genres) VALUES ([animeId], [genres])`,
         "content": "INSERT OR IGNORE INTO [table-content] (id, animeId) VALUES ([id], [animeId])",
         "element": `INSERT OR IGNORE INTO [table] (name) VALUES ("[name]")`,
     },

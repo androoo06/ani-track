@@ -153,6 +153,10 @@
     background: url(../assets/media/x.svg);
 }
 
+.-delete-history-role .-de-select:hover {
+    background: url(../assets/media/x.svg);
+}
+
 #anime-popup .-half {
     width: 50%;
     /* background-color: red; */

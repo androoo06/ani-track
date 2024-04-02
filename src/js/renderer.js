@@ -19,27 +19,35 @@ let t4 = 0.65
 let currentRating = 0
 let watchCodes = ["NOT WATCHING", "CURRENTLY WATCHING", "COMPLETED"]
 let opening = false
+let filters = {
+    genres: [],
+    tags: [],
+    __tagIds: [],
+    "min-rating": null,
+    "max-rating": null,
+    name: "",
+}
 
 // genres that appear in anilist
 let genres = {
-    "ac": "Action",
-    "ad": "Adventure",
-    "dr": "Drama", 
-    "ec": "Ecchi",
-    "fa": "Fantasy",
-    "he": "Hentai",
-    "ho": "Horror",
-    "ma": "Mahou Shoujo",
-    "me": "Mecha",
-    "mu": "Music",
-    "my": "Mystery",
-    "ps": "Psychological",
-    "ro": "Romance",
-    "sc": "Sci-Fi",
-    "sl": "Slice of Life",
-    "sp": "Sports",
-    "su": "Supernatural",
-    "th": "Thriller"
+    "ac": "ACTION",
+    "ad": "ADVENTURE",
+    "dr": "DRAMA", 
+    "ec": "ECCHI",
+    "fa": "FANTASY",
+    "he": "HENTAI",
+    "ho": "HORROR",
+    "ma": "MAHOU SHOUJO",
+    "me": "MECHA",
+    "mu": "MUSIC",
+    "my": "MYSTERY",
+    "ps": "PSYCHOLOGICAL",
+    "ro": "ROMANCE",
+    "sc": "SCI-FI",
+    "sl": "SLICE OF LIFE",
+    "sp": "SPORTS",
+    "su": "SUPERNATURAL",
+    "th": "THRILLER"
 }
 
 function encodeGenres(arr) {
@@ -185,10 +193,6 @@ function loadRoleIcons() {
     })
 }
 
-function insertAnime(id) {
-
-}
-
 async function loadAnimeStatuses(animeId) {
     let popup = $("#anime-popup")
 
@@ -209,32 +213,6 @@ async function loadAnimeStatuses(animeId) {
         popup.find("#rated-label").removeClass("hidden")
         popup.find("span:not(#rated-label)").addClass("hidden")
     }
-
-    // ipcRenderer.invoke("queryDB", "get", "watch-code", {id: animeId}).then(watchCode => {
-    //     console.log(watchCode)
-    //     if (watchCode.length > 0) {
-    //         $(popup).find(".-watching").text(watchCodes[watchCode[0].watching || 0])
-    //     } else {
-    //         $(popup).find(".-watching").text(watchCodes[0])
-    //     }
-    // }).catch(e => {
-    //     console.log("error in getting watch-code:", e)
-    // })
-    
-    // ipcRenderer.invoke("queryDB", "get", "rating", {id: animeId}).then(rating => {
-    //     console.log(rating)
-    //     if (rating.length > 0 && rating[0].rating != null && rating[0].rating > 0) {
-    //         popup.find("#rated-label").addClass("hidden")
-    //         popup.find("span:not(#rated-label)").removeClass("hidden").text(`★${rating[0].rating}/10`)
-    
-    //         $("#rating-middle").css("left", `${rating[0].rating * 10}%`)
-    //     } else {
-    //         popup.find("#rated-label").removeClass("hidden")
-    //         popup.find("span:not(#rated-label)").addClass("hidden")
-    //     }
-    // }).catch(e => {
-    //     console.log("error in getting rating:", e)
-    // })
 }
 
 async function refreshViewWatchlist(table) {
@@ -374,6 +352,31 @@ function connectRatePopup(e) {
     }
 }
 
+function updateHistoryContent(filterCategory) {
+    let content = $(`#history-${filterCategory}-content`)
+    let html = ""
+
+    filters[filterCategory].forEach(filter => {
+        html += `<div class="-selection -delete-history-role no-highlight">
+                     <button class="-de-select">${filter.trim()}</button>
+                 </div>&thinsp;`
+    })
+
+    content.html(html)
+}
+
+function filterName(rows, name) {
+    let filtered = []
+    for (i in rows) {
+        let _str = rows[i]
+        if (_str.toLowerCase().search(name.toLowerCase()) > -1) {
+            filtered.push(_str)
+        }
+    }
+
+    return filtered
+}
+
 $(".-watching").on("click", () => {
     openAsPopup($("#watching-popup"))
 })
@@ -453,10 +456,12 @@ $("#add-item").on("click", () => {
     openAsPopup($("#create-new-popup")[0])
 })
 
-$(".-addrole").on("click", async (event) => {
+$(".-addrole").on("click", () => {
     $("#role-popup").find(".-content").html("")
     openAsPopup($("#role-popup")[0])
+})
 
+$(".-ap-role").on("click", async () => {
     // load the popup with clickables
     let tbl = getCategory(event.target)
 
@@ -472,6 +477,30 @@ $(".-addrole").on("click", async (event) => {
     rows.forEach((row) => {
         let n = row.name.toUpperCase()
         html += `<div class="-selectable no-highlight -addrole-internal" id="${tbl}$separator$${n}$separator$${row.id}$separator$${args.animeId}">${n}</div>`
+    })
+
+    $("#role-popup").find(".-content").html(html)
+})
+
+$(".-history-role").on("click", async (event) => {
+    let category = $(event.target).closest(".-select-title")[0].childNodes[0].nodeValue.trim()
+
+    let rows = []
+    if (category === "Genres") {
+        // get all from existing dict
+        for (abbrev in genres) rows.push(genres[abbrev])
+    } else if (category == "Tags") {
+        // get all tags from tagContent
+        let queryRows = await ipcRenderer.invoke("queryDB", "get", "all", {"table": "Tag"})
+        console.log(queryRows)
+        queryRows.forEach(row => {
+            rows.push(row.name)
+        })
+    }
+
+    let html = ""
+    rows.forEach((row) => {
+        html += `<div class="-selectable no-highlight -add-filter-role" data-filtertype="${category}">${row.toUpperCase()}</div>`
     })
 
     $("#role-popup").find(".-content").html(html)
@@ -517,6 +546,127 @@ $(".-watch-code").on("click", async (event) => {
     await loadCurrentlyWatching()
 
     closePopup("#watching-popup")
+})
+
+$("#apply-filters").on("click", async (event) => {
+    // console.log(filters)
+
+    let queryStr = ""
+
+    // generate filters query (min/max rating, tags)    
+    if (filters.__tagIds.length > 0) {
+        queryStr += "SELECT animeId FROM TagContent t WHERE "
+        
+        for (ti in filters.__tagIds) {
+            queryStr += `t.id = ${filters.__tagIds[ti]} OR `
+        }
+        
+        queryStr = queryStr.slice(0, -4)
+        
+        if (filters['min-rating'] !== null || filters['max-rating'] !== null) {
+            queryStr += " UNION SELECT id FROM Anime a WHERE "
+        }
+    } else{
+        queryStr += "SELECT id FROM Anime a"
+
+        if (filters['min-rating'] !== null || filters['max-rating'] !== null) {
+            queryStr += " WHERE "
+        }
+    }
+
+    if (filters['min-rating'] !== null) {
+        queryStr += `a.rating >= ${filters['min-rating']}`
+    }
+
+    if (filters['min-rating'] !== null && filters['max-rating'] !== null) {
+        queryStr += " AND "
+    }
+
+    if (filters['max-rating'] !== null) {
+        queryStr += `a.rating <= ${filters['max-rating']}`
+    }
+
+    let args = {
+        filterProperties: queryStr
+    }
+
+    // console.log(queryStr)
+    let animeRows = await ipcRenderer.invoke("queryDB", "get", "filtered", args)
+
+    // add filter by genres
+    let filtered = []
+    animeRows.forEach(row => {
+        let _genres = decodeGenres(row.genres)
+
+        if (filters.genres.length === 0) {
+            filtered.push(row.id)
+        } else {
+            for (i in _genres) {
+                if (filters.genres.includes(_genres[i])) {
+                    filtered.push(row.id)
+                    break
+                }
+            }
+        }
+    })
+    
+    let cache = {}
+
+    let nameFiltered = []
+    await Promise.all(filtered.map(async (id) => {
+        let data = await ipcRenderer.invoke("queryAnilist", "specifics", id)
+        if (data) {
+            nameFiltered.push(data.title)
+            cache[data.title.toLowerCase()] = id
+        }
+    }))
+    // console.log(nameFiltered)
+
+    // add filter by the name search
+    nameFiltered = filterName(nameFiltered, filters.name)
+    // console.log(nameFiltered)
+
+    let html = ""
+    nameFiltered.forEach(name => {
+        let id = cache[name.toLowerCase()]
+        html += `<div class="list-tab no-highlight --open-anime" id="${id}" style="color: #d7d5d5b1;">${name}</div>`
+    })
+
+    $("#filter-results").html(html)
+})
+
+$(document).on("click", ".-rating-filter", async function (event) {
+    let n = parseInt(event.target.value)
+    filters[event.target.id] = isNaN(n) ? null : n
+})
+
+$(document).on("click", ".-add-filter-role", async function (event) {
+    let txt = $(event.target).text().trim()
+    let filterCategory = $(event.target).data("filtertype").toLowerCase()
+    
+    filters[filterCategory].push(txt)
+
+    if (filterCategory == "tags") {
+        let id = await ipcRenderer.invoke("queryDB", "get", "id", {table: "Tag", name: txt})
+        filters.__tagIds.push(id[0].id)
+    }
+
+    updateHistoryContent(filterCategory)
+})
+
+$(document).on("click", ".-delete-history-role", async (event) => {
+    let filterCategory = $(event.target).closest("th").find(".-select-title")[0].childNodes[0].nodeValue.trim().toLowerCase()
+    let txt = $(event.target).text()
+
+    const index = filters[filterCategory].indexOf(txt)
+    filters[filterCategory].splice(index, 1)
+
+    if (filterCategory === "tags") {
+        filters.__tagIds.splice(index, 1)
+    }
+
+    $(event.target).remove()
+    updateHistoryContent(filterCategory)
 })
 
 $(document).on("click", ".outlined", async function() {
@@ -604,6 +754,11 @@ $(document).on("click", ".-addrole-internal", async function (event) {
 })
 
 $(document).on("click", ".--open-anime", openAnime)
+
+$(".-history-name-filter").on("propertychange change keyup paste input", async function (e) {
+    console.log('e')
+    filters.name = $(e.target).val().trim().toLowerCase()
+})
 
 $("#create-new-popup").find(".-search-bar").on("keypress", async function (e) {
     if (!hitEnter(e)) return
