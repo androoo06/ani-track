@@ -240,7 +240,6 @@ async function refreshViewWatchlist(table) {
         } 
     }))
 
-    // console.log(html)
     $(`#view-watchlist-animecontent`).html(`<br>${html}`)
 
     fillWheel(animes)
@@ -290,14 +289,16 @@ async function openAnime(event) {
 
 async function loadCategory(tabName) {
     let classes = (tabName == "watchlists") ? `--view-watchlist` : ""
+    let secondaryClass = (tabName == "watchlists") ? `--view-watchlist-manage` : ""
 
-    let html = ""
+    let html = "", html2 = ""
     let rows = await getAll(tabName)
     rows.forEach((row) => {
         html += `<div class="list-tab no-highlight ${classes}" style="color: #d7d5d5b1;">${row.name.toUpperCase()}</div>`
+        html2 += `<div class="list-tab no-highlight ${classes} ${secondaryClass}" style="color: #d7d5d5b1;">${row.name.toUpperCase()}</div>`
     })
 
-    $(`#manage-${tabName}`).html(html)
+    $(`#manage-${tabName}`).html(html2)
     $(`#${tabName}-content`).html(`<br>${html}`)
 }
 
@@ -416,6 +417,15 @@ function getFilterQuery() {
     return queryStr
 }
 
+function openWatchlist(event) {
+    event.stopPropagation()
+    switchTab("View Watchlist")
+
+    let table = $(event.target).text().trim().toUpperCase()
+    currentViewing = table
+    refreshViewWatchlist(table)
+}
+
 $(".-watching").on("click", () => {
     openAsPopup($("#watching-popup"))
 })
@@ -437,12 +447,7 @@ $(".collapsible").on("click", (event) => {
     }
 
     if (target.hasClass("--view-watchlist")) {
-        event.stopPropagation()
-        switchTab("View Watchlist")
-
-        let table = $(this).text().trim().toUpperCase()
-        currentViewing = table
-        refreshViewWatchlist(table)
+        openWatchlist(event)
     } else if (target.hasClass("--open-anime")) {
         return
     } else {
@@ -646,6 +651,8 @@ $(".-rating-filter").on("propertychange change keyup paste input", async functio
     let n = parseInt(event.target.value)
     filters[event.target.id] = isNaN(n) ? null : n
 })
+
+$(document).on("click", ".--view-watchlist-manage", openWatchlist)
 
 $(document).on("click", ".-add-filter-role", async function (event) {
     let txt = $(event.target).text().trim()
