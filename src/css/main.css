@@ -108,10 +108,15 @@ html, body {
 }
 
 canvas {
+    position: relative;
     display: block;
     aspect-ratio: 1;
-    width: 50%;
-    height: auto;
-    max-width: 50%;
+    
+    width: 50vh;
+    max-width: 50vh;
+
+    height: 50vh;
+    max-height: 50vh;
+
     background-color: lightgray;
 }

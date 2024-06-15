@@ -458,7 +458,8 @@ function updatePieChart(name, inData) {
         type: 'pie',
         data: data,
         options: {
-            responsive: true
+            responsive: true,
+            maintainAspectRatio: false
         }
     });
 
