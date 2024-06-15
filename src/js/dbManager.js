@@ -66,6 +66,7 @@ let queries = {
         "rating": "SELECT (rating) from Anime WHERE (id = [id])",
         "watching": "SELECT (id) FROM Anime WHERE (watching = [watchCode])",
         "watch-code": "SELECT (watching) FROM Anime WHERE (id = [id])",
+        "name": "SELECT (name) FROM [table] WHERE (id = [id])",
     },
 
     "insert": {

@@ -1,5 +1,7 @@
 const { ipcRenderer } = require("electron");
 const { watch } = require("original-fs");
+const { Chart } = require('chart.js/auto');
+
 window.$ = window.jQuery = require('../node_modules/jquery/dist/jquery.min.js');
 
 ipcRenderer.on("version", (_, ver) => {
@@ -25,8 +27,23 @@ let filters = {
     __tagIds: [],
     "min-rating": null,
     "max-rating": null,
+    // maybe add watchcode later
     name: "",
 }
+
+// https://gist.github.com/mucar/3898821
+let colors = ['#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6', 
+    '#E6B333', '#3366E6', '#999966', '#99FF99', '#B34D4D',
+    '#80B300', '#809900', '#E6B3B3', '#6680B3', '#66991A', 
+    '#FF99E6', '#CCFF1A', '#FF1A66', '#E6331A', '#33FFCC',
+    '#66994D', '#B366CC', '#4D8000', '#B33300', '#CC80CC', 
+    '#66664D', '#991AFF', '#E666FF', '#4DB3FF', '#1AB399',
+    '#E666B3', '#33991A', '#CC9999', '#B3B31A', '#00E680', 
+    '#4D8066', '#809980', '#E6FF80', '#1AFF33', '#999933',
+    '#FF3380', '#CCCC00', '#66E64D', '#4D80CC', '#9900B3', 
+    '#E64D66', '#4DB380', '#FF4D4D', '#99E6E6', '#6666FF'];
+
+let charts = {}
 
 // genres that appear in anilist
 let genres = {
@@ -424,6 +441,104 @@ function openWatchlist(event) {
     let table = $(event.target).text().trim().toUpperCase()
     currentViewing = table
     refreshViewWatchlist(table)
+}
+
+function updatePieChart(name, inData) {
+    const data = {
+        labels: Object.keys(inData),
+        datasets: [{
+          label: `${name.toUpperCase()} BREAKDOWN`,
+          data: Object.values(inData),
+          backgroundColor: colors,
+          hoverOffset: 4
+        }]
+      };
+
+    const chart = charts[name] || new Chart($(`#${name.toLowerCase()}-breakdown`).find("canvas"), {
+        type: 'pie',
+        data: data,
+        options: {
+            responsive: true
+        }
+    });
+
+    chart.data = data
+    charts[name] = chart
+}
+
+async function getTblCount(tbl) {
+    let tblConversions = {} // to go from ID to Name (store here to make less calls to the DB)
+    let outData = {}
+
+    let content = await ipcRenderer.invoke("queryDB", "get", "all", {"table": `${tbl}Content`})
+    await Promise.all(content.map(async (row) => {
+        let str = tblConversions[row.id]
+        if (str == null) {
+            let names = await ipcRenderer.invoke("queryDB", "get", "name", {"table": tbl, "id": row.id})
+            tblConversions[row.id] = names[0].name
+            str = names[0].name
+        }
+        
+        if (str != null) {
+            outData[str] = (outData[str] || 0) + 1
+        } else {
+            console.log("null value for tagConversion id")
+        }
+    }))
+
+    updatePieChart(tbl, outData)
+}
+
+async function getGenreCount() {
+    let outData = {}
+
+    for (const [_, genre] of Object.entries(genres)) {
+        outData[genre] = 0
+    }
+
+    let rows = await ipcRenderer.invoke("queryDB", "get", "all", {"table": `Anime`})
+    await Promise.all(rows.map(async (row) => {
+        let decoded = decodeGenres(row.genres)
+        decoded.forEach(genre => {
+            outData[genre]++;
+        })
+    }))
+
+    updatePieChart("Genre", outData)
+}
+
+async function loadDataTab() {
+
+    // total completed
+    let totalCompleted = await ipcRenderer.invoke("queryDB", "get", "watching", {"watchCode": 2}).length
+    $("#total-anime-completed").text = `Total Anime Completed: ${totalCompleted}`
+
+    // average star rating
+    let starQuery = getFilterQuery({
+        genres: [],
+        tags: [],
+        __tagIds: [],
+        "min-rating": 0,
+        "max-rating": null,
+        name: "",
+    })
+
+    let args = {
+        filterProperties: starQuery
+    }
+
+    let totalRating = 0
+    let animeRows = await ipcRenderer.invoke("queryDB", "get", "filtered", args)
+    animeRows.forEach(row => {
+        totalRating += row.rating
+    })
+    let averageRating = totalRating / animeRows.length
+    $("#average-star-rating").text = `Average Star Rating: ${averageRating}`
+
+    // breakdown charts
+    getTblCount("Tag")
+    getTblCount("Recommender")
+    getGenreCount() //different behavior than the above two
 }
 
 $(".-watching").on("click", () => {
@@ -829,6 +944,9 @@ function render() {
         loadCategory(tabName)
     })
 
-     // load currently watching
-     loadCurrentlyWatching()
+    // load currently watching
+    loadCurrentlyWatching()
+
+    // load data tab
+    loadDataTab()
 }

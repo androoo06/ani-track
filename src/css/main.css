@@ -106,3 +106,12 @@ html, body {
     width: 25%;
     left: 37.5%;
 }
+
+canvas {
+    display: block;
+    aspect-ratio: 1;
+    width: 50%;
+    height: auto;
+    max-width: 50%;
+    background-color: lightgray;
+}

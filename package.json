@@ -35,6 +35,7 @@
     },
     "dependencies": {
         "anilist-node": "^1.14.1",
+        "chart.js": "^4.4.3",
         "childprocess": "^2.0.2",
         "electron-updater": "^6.1.1",
         "jquery": "^3.7.1",
