@@ -206,7 +206,7 @@ async function loadAnimeStatuses(animeId) {
     let rating = await ipcRenderer.invoke("queryDB", "get", "rating", {id: animeId})
     if (rating.length > 0 && rating[0].rating != null && rating[0].rating > 0) {
         popup.find("#rated-label").addClass("hidden")
-        popup.find("span:not(#rated-label)").removeClass("hidden").text(`★${rating[0].rating}/10`)
+        popup.find("span:not(#rated-label)").removeClass("hidden").html(`★<span style="color: yellow">${rating[0].rating}</span>/10`)
 
         $("#rating-middle").css("left", `${rating[0].rating * 10}%`)
     } else {
@@ -378,40 +378,40 @@ function filterName(rows, name) {
     return filtered
 }
 
-function getFilterQuery() {
+function getFilterQuery(filtersOverride = filters) {
     let queryStr = ""
 
     // generate filters query (min/max rating, tags)    
-    if (filters.__tagIds.length > 0) {
+    if (filtersOverride.__tagIds.length > 0) {
         queryStr += "SELECT animeId FROM TagContent t WHERE "
         
-        for (ti in filters.__tagIds) {
-            queryStr += `t.id = ${filters.__tagIds[ti]} OR `
+        for (ti in filtersOverride.__tagIds) {
+            queryStr += `t.id = ${filtersOverride.__tagIds[ti]} OR `
         }
         
         queryStr = queryStr.slice(0, -4)
         
-        if (filters['min-rating'] !== null || filters['max-rating'] !== null) {
+        if (filtersOverride['min-rating'] !== null || filtersOverride['max-rating'] !== null) {
             queryStr += " UNION SELECT id FROM Anime a WHERE "
         }
     } else{
         queryStr += "SELECT id FROM Anime a"
 
-        if (filters['min-rating'] !== null || filters['max-rating'] !== null) {
+        if (filtersOverride['min-rating'] !== null || filtersOverride['max-rating'] !== null) {
             queryStr += " WHERE "
         }
     }
 
-    if (filters['min-rating'] !== null) {
-        queryStr += `a.rating >= ${filters['min-rating']}`
+    if (filtersOverride['min-rating'] !== null) {
+        queryStr += `a.rating >= ${filtersOverride['min-rating']}`
     }
 
-    if (filters['min-rating'] !== null && filters['max-rating'] !== null) {
+    if (filtersOverride['min-rating'] !== null && filtersOverride['max-rating'] !== null) {
         queryStr += " AND "
     }
 
-    if (filters['max-rating'] !== null) {
-        queryStr += `a.rating <= ${filters['max-rating']}`
+    if (filtersOverride['max-rating'] !== null) {
+        queryStr += `a.rating <= ${filtersOverride['max-rating']}`
     }
 
     return queryStr

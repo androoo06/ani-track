@@ -55,3 +55,7 @@
     width: 100%;
     /* background-color: blue; */
 }
+
+#manage-tab::-webkit-scrollbar {
+    display: none;
+}
