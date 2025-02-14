@@ -8,9 +8,6 @@
     <title>Ani-Track or Whatever</title>
 
     <link rel="stylesheet" href="css/main.css">
-
-    <script type="text/javascript" defer src="js/renderer.js"></script>
-    <script type="text/javascript" defer src="js/wheel.js"></script>
 </head>
 
 <body>
@@ -109,7 +106,8 @@
 
     <div id="role-popup" class="--popup">
         <button class="popup-exit" style="background: url(assets/media/x.svg);"></button>
-        <input class="-search-bar" type="text" placeholder="Filter by Name" name="search">
+        <!-- <input class="-search-bar" type="text" placeholder="Filter by Name" name="search"> -->
+        <div class="-title">TEST</div>
         <div class="-content"></div>
     </div>
 
@@ -307,6 +305,14 @@
                             <input class="-history-name-filter" type="text" placeholder="title">
                         </div>
                     </th>
+                    <th>
+                        <div class="-select-title">
+                            WatchCode
+                        </div>
+                        <div class="-select-content">
+                            <input class="-watchcode-filter" type="text" placeholder="code">
+                        </div>
+                    </th>
                 </table>
                 <div class="list-tab no-highlight">
                     <br>
@@ -329,18 +335,32 @@
                 <div class="list-tab no-highlight" id="average-star-rating">
                     Average Star Rating:
                 </div>
-                <div class="list-tab no-highlight breakdownchart" id="tag-breakdown">
-                    TAG BREAKDOWN<br>
-                    <canvas></canvas>
+
+                <div class="list-tab no-highlight"></div> <!-- for some vertical padding -->
+
+                <table class="list-tab no-highlight" id="breakdown-table">
+                    <th id="tag-breakdown">
+                        TAG BREAKDOWN<br>
+                        <canvas></canvas>
+                    </th>
+                    <th id="genre-breakdown">
+                        GENRE BREAKDOWN<br>
+                        <canvas></canvas>
+                    </th>
+                    <th id="recommender-breakdown">
+                        RECOMMENDER BREAKDOWN<br>
+                        <canvas></canvas>
+                    </th>
+                </table>
+                
+                <div class="list-tab no-highlight"></div> <!-- for some vertical padding -->
+
+                <div class="list-tab no-highlight">
+                    Filter Recommenders:
+                    <input type="text" id="-recommender-filter" placeholder="FILTER">
                 </div>
-                <div class="list-tab no-highlight breakdownchart" id="genre-breakdown">
-                    GENRE BREAKDOWN<br>
-                    <canvas></canvas>
-                </div>
-                <div class="list-tab no-highlight breakdownchart" id="recommender-breakdown">
-                    RECOMMENDER BREAKDOWN<br>
-                    <canvas></canvas>
-                </div>
+
+                <div class="list-tab no-highlight" id="recommender-stats"></div>
             </div>
 
             <div id="view-watchlist" class="tab hidden">
@@ -397,6 +417,11 @@
             VERSION
         </div>
     </div>
+
+    <!--  -->
+
+    <script type="text/javascript" src="js/renderer.js"></script>
+    <script type="text/javascript" src="js/wheel.js"></script>
 </body>
 
 </html>

@@ -1,0 +1,45 @@
+#breakdown-table th {
+    /* background-color: blue; */
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    width: 33.3333%;
+}
+
+canvas {
+    position: relative;
+    aspect-ratio: 1;
+    
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+
+    /* width: var(--canvas-size);
+    max-width: var(--canvas-size);
+
+    height: var(--canvas-size);
+    max-height: var(--canvas-size); */
+
+    width: auto;
+    height: auto;
+
+    background-color: lightgray;
+}
+
+#-recommender-filter {
+    border: 0;
+    margin: 0;
+
+    font-size: 2vh;
+    border-radius: 2px 2px 2px 2px;
+    text-align: center;
+
+    height: 100%;
+}
+
+.rec-rating-span {
+    color: aqua;
+    background-color: transparent;
+}

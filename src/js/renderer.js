@@ -19,7 +19,7 @@ let currentViewing = ""
 let o4 = 0.35
 let t4 = 0.65
 let currentRating = 0
-let watchCodes = ["NOT WATCHING", "CURRENTLY WATCHING", "COMPLETED"]
+let watchCodes = ["NOT WATCHING", "CURRENTLY WATCHING", "COMPLETED"] // [ 0 , 1 , 2]
 let opening = false
 let filters = {
     genres: [],
@@ -27,7 +27,7 @@ let filters = {
     __tagIds: [],
     "min-rating": null,
     "max-rating": null,
-    // maybe add watchcode later
+    watchcode: -1,
     name: "",
 }
 
@@ -49,6 +49,7 @@ let charts = {}
 let genres = {
     "ac": "ACTION",
     "ad": "ADVENTURE",
+    "co": "COMEDY",
     "dr": "DRAMA", 
     "ec": "ECCHI",
     "fa": "FANTASY",
@@ -127,6 +128,8 @@ function switchTab(newTabDisplay) {
     } else {
         $(`#return-home`).removeClass("hidden")
     }
+
+    loadDataTab() // lol, could have it after every single thing is rendered but this is a bit easier
 
     // change the text without overwriting the button HTML
     managing = ""
@@ -398,6 +401,10 @@ function filterName(rows, name) {
 function getFilterQuery(filtersOverride = filters) {
     let queryStr = ""
 
+    let validWatchcode = (filtersOverride.watchcode >= 0 && filtersOverride.watchcode <= 2);
+    let validMinRating = filtersOverride['min-rating'] !== null;
+    let validMaxRating = filtersOverride['max-rating'] !== null;
+
     // generate filters query (min/max rating, tags)    
     if (filtersOverride.__tagIds.length > 0) {
         queryStr += "SELECT animeId FROM TagContent t WHERE "
@@ -408,27 +415,36 @@ function getFilterQuery(filtersOverride = filters) {
         
         queryStr = queryStr.slice(0, -4)
         
-        if (filtersOverride['min-rating'] !== null || filtersOverride['max-rating'] !== null) {
+        if (validMinRating || validMaxRating || validWatchcode) {
             queryStr += " UNION SELECT id FROM Anime a WHERE "
         }
     } else{
         queryStr += "SELECT id FROM Anime a"
 
-        if (filtersOverride['min-rating'] !== null || filtersOverride['max-rating'] !== null) {
+        if (validMinRating || validMaxRating || validWatchcode) {
             queryStr += " WHERE "
         }
     }
 
-    if (filtersOverride['min-rating'] !== null) {
+    if (validMinRating) {
         queryStr += `a.rating >= ${filtersOverride['min-rating']}`
     }
 
-    if (filtersOverride['min-rating'] !== null && filtersOverride['max-rating'] !== null) {
+    if (validMinRating && validMaxRating) {
         queryStr += " AND "
     }
 
-    if (filtersOverride['max-rating'] !== null) {
+    if (validMaxRating) {
         queryStr += `a.rating <= ${filtersOverride['max-rating']}`
+    }
+
+    // the reason to separate the " AND " from the actual querystring is the case where the AND is not needed (ex. the watchcode is the only filter parameter)
+    if ((validMinRating || validMaxRating) && validWatchcode) {
+        queryStr += ` AND `
+    }
+
+    if (validWatchcode) {
+        queryStr += `a.watching = ${filtersOverride.watchcode}`
     }
 
     return queryStr
@@ -454,55 +470,91 @@ function updatePieChart(name, inData) {
         }]
       };
 
-    const chart = charts[name] || new Chart($(`#${name.toLowerCase()}-breakdown`).find("canvas"), {
-        type: 'pie',
-        data: data,
-        options: {
-            responsive: true,
-            maintainAspectRatio: false
-        }
-    });
+    let updateFlag = true;
+    const chart = charts[name] || (function () {
+        updateFlag = false;
+        return new Chart($(`#${name.toLowerCase()}-breakdown`).find("canvas"), {
+            type: 'pie',
+            data: data,
+            options: {
+                responsive: false,
+                maintainAspectRatio: false,
+            }
+        });        
+    })()
 
-    chart.data = data
+
     charts[name] = chart
+    chart.data = data
+
+    if (updateFlag) chart.update()
+    // console.log("----------------")
+    // console.log(name)
+    // console.log(inData)
+    // console.log(data)
+    // console.log("----------------")
+    // chart.update()
 }
 
-async function getTblCount(tbl) {
+async function getTblCount(tblName, rows) {
     let tblConversions = {} // to go from ID to Name (store here to make less calls to the DB)
     let outData = {}
 
-    let content = await ipcRenderer.invoke("queryDB", "get", "all", {"table": `${tbl}Content`})
-    await Promise.all(content.map(async (row) => {
-        let str = tblConversions[row.id]
-        if (str == null) {
-            let names = await ipcRenderer.invoke("queryDB", "get", "name", {"table": tbl, "id": row.id})
-            tblConversions[row.id] = names[0].name
-            str = names[0].name
-        }
-        
-        if (str != null) {
-            outData[str] = (outData[str] || 0) + 1
-        } else {
-            console.log("null value for tagConversion id")
-        }
-    }))
+    // foreach animeId in rows
+    //  get all ids from tblName-Content where animeId=animeId
+    //  tally names in outData (get names too lol)
 
-    updatePieChart(tbl, outData)
+    for (let i=0; i<rows.length; i++) {
+
+        let anime = rows[i]
+        let tblIds = await ipcRenderer.invoke("queryDB", "get", "exact", {
+            "table-content": `${tblName}Content`,
+            "id": `-1 OR 1=1`,
+            "animeId": anime.id
+        })
+
+        for (let j=0; j<tblIds.length; j++) {
+            let content = tblIds[j]
+            
+            let str = tblConversions[content.id]
+            if (str == null) {
+                let names = await ipcRenderer.invoke("queryDB", "get", "name", {"table": tblName, "id": content.id})
+                tblConversions[content.id] = names[0].name
+                str = names[0].name
+            }
+            
+            if (str != null) {
+                outData[str] = (outData[str] || 0) + 1
+            } else {
+                console.log("null value for tagConversion id")
+            }
+
+        }
+
+    }
+
+    updatePieChart(tblName, outData)
 }
 
 async function getGenreCount() {
     let outData = {}
 
-    for (const [_, genre] of Object.entries(genres)) {
-        outData[genre] = 0
-    }
+    // for (const [_, genre] of Object.entries(genres)) {
+    //     outData[genre] = 0
+    // }
 
     let rows = await ipcRenderer.invoke("queryDB", "get", "all", {"table": `Anime`})
     await Promise.all(rows.map(async (row) => {
-        let decoded = decodeGenres(row.genres)
-        decoded.forEach(genre => {
-            outData[genre]++;
-        })
+        if (row.watching == 2) {
+            let decoded = decodeGenres(row.genres)
+            decoded.forEach(genre => {
+                if (outData[genre] != null) {
+                    outData[genre]++;
+                } else {
+                    outData[genre] = 1
+                }
+            })
+        }
     }))
 
     updatePieChart("Genre", outData)
@@ -510,17 +562,20 @@ async function getGenreCount() {
 
 async function loadDataTab() {
 
-    // total completed
-    let totalCompleted = await ipcRenderer.invoke("queryDB", "get", "watching", {"watchCode": 2}).length
-    $("#total-anime-completed").text = `Total Anime Completed: ${totalCompleted}`
+    let watched = await ipcRenderer.invoke("queryDB", "get", "watching", {"watchCode": 2});
 
-    // average star rating
+    // total completed
+    let totalCompleted = watched.length
+    $("#total-anime-completed").text(`Total Anime Completed: ${totalCompleted}`)
+
+    // average star rating (for completed, rated animes, this is the average star rating out of 10)
     let starQuery = getFilterQuery({
         genres: [],
         tags: [],
         __tagIds: [],
-        "min-rating": 0,
+        "min-rating": 0, // main point of this query
         "max-rating": null,
+        watchcode: 2, // second main point of this query
         name: "",
     })
 
@@ -534,11 +589,55 @@ async function loadDataTab() {
         totalRating += row.rating
     })
     let averageRating = totalRating / animeRows.length
-    $("#average-star-rating").text = `Average Star Rating: ${averageRating}`
+    $("#average-star-rating").text(`Average Star Rating: ${averageRating}`)
+
+    // recommenders dropdowns
+    let recommenders = await ipcRenderer.invoke("queryDB", "get", "all", {table: "Recommender"})
+    for (let i=0; i<recommenders.length; i++) {
+        let r = recommenders[i]
+        let animes = await ipcRenderer.invoke("queryDB", "get", "recommended", {id: r.id})
+
+        let total = animes.length;
+        let totalStars = 0;
+
+        let options = ""
+        for (let j=0; j<animes.length; j++) {
+            let a = animes[j]
+            
+            // skip non-completed animes for this display  
+            if (a.watching != 2) {
+                total -=1; continue
+            }           
+
+            if (a.rating == null) {
+                total -= 1
+            } else {
+                totalStars += a.rating
+            }
+
+            let data = await ipcRenderer.invoke("queryAnilist", "specifics", a.id)
+            options += `<div id="${a.id}" class="list-tab no-highlight --open-anime" style="color: #d7d5d5b1;">${data.title.toUpperCase()}</div>`
+        }
+
+        let collapsible = 
+            `<div class="collapsible recommender-collapsible no-highlight" id="recommended-content-${r.name}">
+                <div class="left">
+                    <div class="left-c1">
+                        ${r.name}  <mark class="rec-rating-span">(${totalStars}/${total}) = ${totalStars/total}</mark>
+                    </div>
+                    <span></span>
+                </div>
+                <div class="collap-right hidden">
+                    <br>${options}
+                </div>
+            </div>`
+
+        $("#recommender-stats").html(collapsible)
+    }
 
     // breakdown charts
-    getTblCount("Tag")
-    getTblCount("Recommender")
+    getTblCount("Tag", watched)
+    getTblCount("Recommender", watched)
     getGenreCount() //different behavior than the above two
 }
 
@@ -553,30 +652,6 @@ $(".-rating").on("click", () => {
 
     // connected to .outlined click event 
     document.addEventListener('mousemove', connectRatePopup, {passive: false})
-})
-
-$(".collapsible").on("click", (event) => {
-    let target = $(event.target)
-
-    if (target.is("input") || target.hasClass("collap-right")) {
-        return
-    }
-
-    if (target.hasClass("--view-watchlist")) {
-        openWatchlist(event)
-    } else if (target.hasClass("--open-anime")) {
-        return
-    } else {
-        let collapsible = $(event.target).closest(".collapsible")
-        let hidden = collapsible.find(".hidden")
-        let svg = collapsible.find(".left").find("span")
-
-        if (svg.css("transform") == "matrix(-1, 0, 0, -1, 0, 0)") {
-            toggleCollapsible(svg, hidden, true)
-        } else {
-            toggleCollapsible(svg, hidden, false)
-        }
-    }    
 })
 
 $(".switch-tab").on("click", (event) => {
@@ -639,6 +714,7 @@ $(".-ap-role").on("click", async (event) => {
         html += `<div class="-selectable no-highlight -addrole-internal" id="${tbl}$separator$${n}$separator$${row.id}$separator$${args.animeId}">${n}</div>`
     })
 
+    $("#role-popup").find(".-title").text(tbl.toUpperCase() + "S")
     $("#role-popup").find(".-content").html(html)
 })
 
@@ -768,6 +844,66 @@ $(".-rating-filter").on("propertychange change keyup paste input", async functio
     filters[event.target.id] = isNaN(n) ? null : n
 })
 
+$(".-history-name-filter").on("propertychange change keyup paste input", async function (e) {
+    console.log('e')
+    filters.name = $(e.target).val().trim().toLowerCase()
+})
+
+$(".-watchcode-filter").on("propertychange change keyup paste input", async function (e) {
+    let n = parseInt(e.target.value)
+    filters.watchcode = isNaN(n) ? -1 : n
+})
+
+$("#-recommender-filter").on("propertychange change keyup paste input", async function (e) {
+    let txt = e.target.value
+
+    let unfiltered = []
+    $(".recommender-collapsible").each(function(i) {
+        let el = $(this)
+        let recName = el.attr('id').split("-")[2]
+        unfiltered.push(recName)
+
+        let hidden = el.find(".hidden")
+        let svg = el.find(".left").find("span")
+        toggleCollapsible(svg, hidden, false)
+
+        el.hide()
+    })
+
+    let filtered = filterName(unfiltered, txt)
+    $(".recommender-collapsible").each(function(i) {
+        let el = $(this)
+        let recName = el.attr('id').split("-")[2]
+        if (filtered.includes(recName)) {
+            el.show()
+        }
+    })
+})
+
+$(document).on("click", ".collapsible", function (event) {
+    let target = $(event.target)
+
+    if (target.is("input") || target.hasClass("collap-right")) {
+        return
+    }
+
+    if (target.hasClass("--view-watchlist")) {
+        openWatchlist(event)
+    } else if (target.hasClass("--open-anime")) {
+        return
+    } else {
+        let collapsible = $(event.target).closest(".collapsible")
+        let hidden = collapsible.find(".hidden")
+        let svg = collapsible.find(".left").find("span")
+
+        if (svg.css("transform") == "matrix(-1, 0, 0, -1, 0, 0)") {
+            toggleCollapsible(svg, hidden, true)
+        } else {
+            toggleCollapsible(svg, hidden, false)
+        }
+    }    
+})
+
 $(document).on("click", ".--view-watchlist-manage", openWatchlist)
 
 $(document).on("click", ".-add-filter-role", async function (event) {
@@ -811,6 +947,10 @@ $(document).on("click", ".outlined", async function() {
     let args0 = { "animeId": animeId, "genres": animeGenres }
     await ipcRenderer.invoke("queryDB", "insert", "anime", args0)
 
+    if (currentRating == 0) {
+        currentRating = null
+    }
+
     let args = {
         "animeId": animeId,
         "property": "rating",
@@ -836,18 +976,7 @@ $(document).on("click", ".-delete-role", async function (event) {
         }
 
         await ipcRenderer.invoke("queryDB", "ud", "delete-content", args)
-        // let existsRows = await ipcRenderer.invoke("queryDB", "get", "exists", args)
-        // console.log(existsRows)
-        // let exists = existsRows.length > 0
-
-        // if (!exists) {
-        //     let args2 = {
-        //         "table": "Anime",
-        //         "id": animeId,
-        //     }
-        //     await ipcRenderer.invoke("queryDB", "ud", "delete-main", args2)
-        // }
-
+        
         $(event.target).remove()
         loadRoleIcons()
         refreshViewWatchlist(currentViewing)
@@ -884,11 +1013,6 @@ $(document).on("click", ".-addrole-internal", async function (event) {
 })
 
 $(document).on("click", ".--open-anime", openAnime)
-
-$(".-history-name-filter").on("propertychange change keyup paste input", async function (e) {
-    console.log('e')
-    filters.name = $(e.target).val().trim().toLowerCase()
-})
 
 $("#create-new-popup").find(".-search-bar").on("keypress", async function (e) {
     if (!hitEnter(e)) return

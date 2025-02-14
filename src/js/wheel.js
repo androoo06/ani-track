@@ -1,6 +1,7 @@
-let colors = ['#ff3737', 'yellow', '#31b61f', '#5959ff']
+let animeColors = ['#ff3737', 'yellow', '#31b61f', '#5959ff']
 let textColors = ["white", "black", "black", "white"]
 let scale = 50
+let lastSpin = 5555
 
 function degreesToRadians(degrees) {
     var pi = Math.PI
@@ -21,7 +22,7 @@ function unitVector(x, y) {
     return [x / magnitude, y / magnitude];
 }
 
-function spin() {
+function spin(degOverride) {
     if ($("#wheel").children().length < 7 ) {
         return
     }
@@ -32,7 +33,8 @@ function spin() {
     var x = 1111*5; //min value
     var y = 9999*5; // max value
 
-    var deg = Math.floor(Math.random() * (x - y)) + y;
+    var deg = (degOverride != null) ? lastSpin : Math.floor(Math.random() * (x - y)) + y;
+    lastSpin = deg
 
     setTimeout(() => {
         $("#wheel").addClass("spinning")
@@ -93,7 +95,7 @@ function fillWheel(contents) {
         let subScalar = 40
         let span = `
                     <span class="abs wheel-element" style="clip-path: polygon(50% 50%, ${xy[0]}% ${xy[1]}%, ${xy2[0]}% ${xy2[1]}%); 
-                        background-color: ${colors[i % colors.length]};">
+                        background-color: ${animeColors[i % animeColors.length]};">
                     </span>
                     <span id="${anime[1]}" class="abs wheel-word-box" style="left: ${xy3[0] - (sx * subScalar)}%; top: ${xy3[1] - (sy * subScalar) - 8.25}%; transform: rotate(${(inc / 2) + (i * inc)}deg); color: ${textColors[i % textColors.length]};">
                         ${anime[0]}
@@ -105,9 +107,11 @@ function fillWheel(contents) {
     }) 
 }
 
-$("#spin-wheel").on("click", spin)
+$("#spin-wheel").on("click", () => {
+    spin()
+})
 
 $("#reroll-anime").on("click", () => {
     closePopup($("#wheel-popup"))
-    spin()
+    spin(true)
 })

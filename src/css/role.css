@@ -22,7 +22,7 @@
     display: none;
 }
 
-#role-popup input {
+#role-popup .-title {
     position: absolute;
 
     width: 65%;
@@ -30,6 +30,15 @@
 
     left: 17.5%;
     top: 2.5%;
+
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+
+    font-size: 4.5vh;
+
+    /* background-color: blue; */
 }
 
 #role-popup .-content {

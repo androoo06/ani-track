@@ -44,7 +44,21 @@ module.exports.init = async function () {
     db.get("PRAGMA foreign_keys = ON")
 }
 
-module.exports.close = function () {
+module.exports.close = async function () {
+
+    // Procedure to remove "stranded" animes if they exist
+
+    let strandedAnimes = await this.handleQuery(null, "get", "exists", {})
+   
+    for (let i=0; i<strandedAnimes.length; i++) {
+        await this.handleQuery(null, "ud", "delete-main", {
+            table: "Anime",
+            id: strandedAnimes[i],
+        })
+    }
+
+    // // 
+
     db.close((err) => {
         if (err) {
             return console.error(err.message)
@@ -60,13 +74,14 @@ let queries = {
         "all-in": "SELECT (name) FROM [table] WHERE id IN (SELECT (id) FROM [table-content] WHERE (animeId = [animeId]))",
         "content": "SELECT A.* from Anime A, [table-content] t WHERE ((A.id = t.animeId) AND (t.id = [tableId]))",
         "exact": "SELECT * FROM [table-content] WHERE (id = [id]) AND (animeId = [animeId])",
-        "exists": "SELECT animeId from TagContent UNION SELECT animeid FROM WatchlistContent UNION SELECT animeId FROM RecommenderContent",
+        "exists": "SELECT (id) from Anime A WHERE A.id NOT IN (SELECT (animeId) from TagContent UNION SELECT (animeId) from WatchlistContent UNION SELECT (animeId) FROM RecommenderContent) AND A.rating = NULL AND A.watching = NULL",
         "filtered": "SELECT * from Anime WHERE id IN ([filterProperties])",
         "id": `SELECT (id) FROM [table] WHERE (name = "[name]")`,
-        "rating": "SELECT (rating) from Anime WHERE (id = [id])",
+        "name": "SELECT (name) FROM [table] WHERE (id = [id])",
+        "rating": "SELECT (rating) FROM Anime WHERE (id = [id])",
+        "recommended": "SELECT A.* FROM Anime A WHERE A.id IN (SELECT (animeId) FROM RecommenderContent R WHERE (R.id = [id]))",
         "watching": "SELECT (id) FROM Anime WHERE (watching = [watchCode])",
         "watch-code": "SELECT (watching) FROM Anime WHERE (id = [id])",
-        "name": "SELECT (name) FROM [table] WHERE (id = [id])",
     },
 
     "insert": {

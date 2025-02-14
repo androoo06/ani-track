@@ -10,10 +10,12 @@
 @import url(manage.css);
 @import url(rating.css);
 @import url(watching.css);
+@import url(data-breakdown.css);
 
 :root {
     --bg-color: #191d23;
     --secondary-color: #262c36;
+    --canvas-size: 30vh;
 }
 
 html, body {
@@ -73,6 +75,17 @@ html, body {
     color: white;
 }
 
+.list-tab2 {
+    font-size: 3vh;
+    min-height: 5vh;
+    line-height: 5vh;
+    width: 33.333%;
+    /* background-color: red; */
+    position: relative;
+
+    color: white;
+}
+
 .btn-style {
     border-radius: 5px 5px 5px 5px;
     border: none;
@@ -105,18 +118,4 @@ html, body {
     position: absolute;
     width: 25%;
     left: 37.5%;
-}
-
-canvas {
-    position: relative;
-    display: block;
-    aspect-ratio: 1;
-    
-    width: 50vh;
-    max-width: 50vh;
-
-    height: 50vh;
-    max-height: 50vh;
-
-    background-color: lightgray;
 }
