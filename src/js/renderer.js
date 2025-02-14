@@ -138,8 +138,10 @@ function switchTab(newTabDisplay) {
         $(`#return-home`).removeClass("hidden")
     }
 
-    loadDataTab() // lol, could have it after every single thing is rendered but this is a bit easier
-
+    if (newTab == "data") {
+        loadDataTab() // lol, could have it after every single thing is rendered but this is a bit easier
+    }
+    
     // change the text without overwriting the button HTML
     managing = ""
     currentViewing = ""
@@ -617,6 +619,7 @@ async function loadDataTab() {
     $("#average-star-rating").text(`Average Star Rating: ${averageRating}`)
 
     // recommenders dropdowns
+    let collapsibles = ""
     let recommenders = await ipcRenderer.invoke("queryDB", "get", "all", {table: "Recommender"})
     for (let i=0; i<recommenders.length; i++) {
         let r = recommenders[i]
@@ -657,8 +660,10 @@ async function loadDataTab() {
                 </div>
             </div>`
 
-        $("#recommender-stats").html(collapsible)
+        collapsibles += collapsible   
     }
+
+    $("#recommender-stats").html(collapsibles)
 
     // breakdown charts
     getTblCount("Tag", watched)
@@ -668,10 +673,10 @@ async function loadDataTab() {
     // watched animes dropdown
     let animeDropdownHTML = "<br>"
     watched.sort(function(a, b) {
-        if (a.endtime == null || b.endtime == null) {
-            console.warn("EndTime not set properly for animeId", a.id, "or", b.id)
-            return 0;
-        }
+        // if (a.endtime == null || b.endtime == null) {
+        //     console.warn("EndTime not set properly for animeId", a.id, "or", b.id)
+        //     return 0;
+        // }
         return (a.endtime < b.endtime) ? -1 : ((a.endtime > b.endtime) ? 1 : 0)
     })
     for (let i=0; i<watched.length; i++) {
@@ -1132,7 +1137,4 @@ function render() {
 
     // load currently watching
     loadCurrentlyWatching()
-
-    // load data tab
-    loadDataTab()
 }
