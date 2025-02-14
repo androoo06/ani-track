@@ -290,6 +290,15 @@
                     </th>
                     <th>
                         <div class="-select-title">
+                            Recommenders
+                            <div class="-selection -selection-plusbtn no-highlight">
+                                <button class="-de-select -addrole -history-role">+</button>
+                            </div>
+                        </div>
+                        <div id="history-recommenders-content" class="-select-content"></div>
+                    </th>
+                    <th>
+                        <div class="-select-title">
                             Rating
                         </div>
                         <div class="-select-content">
@@ -329,8 +338,18 @@
             </div>
 
             <div id="data" class="tab hidden">
-                <div class="list-tab no-highlight" id="total-anime-completed">
-                    Total Anime Completed:
+                <div class="list-tab no-highlight">
+                    <div class="collapsible">
+                        <div class="left">
+                            <div class="left-c1" id="total-anime-completed">
+                                Total Anime Completed: 
+                            </div>
+                            <span></span>
+                        </div>
+                        <div id="finished-content" class="collap-right hidden">
+                            <br>
+                        </div>
+                    </div>
                 </div>
                 <div class="list-tab no-highlight" id="average-star-rating">
                     Average Star Rating:

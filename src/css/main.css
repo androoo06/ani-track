@@ -119,3 +119,11 @@ html, body {
     width: 25%;
     left: 37.5%;
 }
+
+button {
+    cursor: pointer;
+}
+
+.tab {
+    cursor: pointer;
+}

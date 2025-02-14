@@ -22,13 +22,18 @@ let currentRating = 0
 let watchCodes = ["NOT WATCHING", "CURRENTLY WATCHING", "COMPLETED"] // [ 0 , 1 , 2]
 let opening = false
 let filters = {
-    genres: [],
-    tags: [],
-    __tagIds: [],
-    "min-rating": null,
-    "max-rating": null,
     watchcode: -1,
     name: "",
+    genres: [],
+    
+    tags: [],
+    __tagIds: [],
+    
+    recommenders: [],
+    __recommenderIds: [],
+
+    "min-rating": null,
+    "max-rating": null,
 }
 
 // https://gist.github.com/mucar/3898821
@@ -101,6 +106,10 @@ function hitEnter(e) {
     if (!e) e = window.event
     var keyCode = e.code || e.key
     return (keyCode == 'Enter')
+}
+
+function capitalizeFirstLetter(val) {
+    return String(val).charAt(0).toUpperCase() + String(val).slice(1);
 }
 
 function peek(arr) {
@@ -447,6 +456,20 @@ function getFilterQuery(filtersOverride = filters) {
         queryStr += `a.watching = ${filtersOverride.watchcode}`
     }
 
+    if (filtersOverride.__recommenderIds.length > 0) {
+        if (queryStr.length > 0) {
+            queryStr += " INTERSECT "
+        }
+
+        queryStr += "SELECT animeId FROM RecommenderContent r WHERE "
+        
+        for (ri in filtersOverride.__recommenderIds) {
+            queryStr += `r.id = ${filtersOverride.__recommenderIds[ri]} OR `
+        }
+        
+        queryStr = queryStr.slice(0, -4)
+    }
+
     return queryStr
 }
 
@@ -573,6 +596,8 @@ async function loadDataTab() {
         genres: [],
         tags: [],
         __tagIds: [],
+        recommenders: [],
+        __recommenderIds: [],
         "min-rating": 0, // main point of this query
         "max-rating": null,
         watchcode: 2, // second main point of this query
@@ -639,6 +664,24 @@ async function loadDataTab() {
     getTblCount("Tag", watched)
     getTblCount("Recommender", watched)
     getGenreCount() //different behavior than the above two
+
+    // watched animes dropdown
+    let animeDropdownHTML = "<br>"
+    watched.sort(function(a, b) {
+        if (a.endtime == null || b.endtime == null) {
+            console.warn("EndTime not set properly for animeId", a.id, "or", b.id)
+            return 0;
+        }
+        return (a.endtime < b.endtime) ? -1 : ((a.endtime > b.endtime) ? 1 : 0)
+    })
+    for (let i=0; i<watched.length; i++) {
+        let anime = watched[i]
+        let data = await ipcRenderer.invoke("queryAnilist", "specifics", anime.id)
+        if (data) {
+            animeDropdownHTML += `<div id="${anime.id}" class="list-tab no-highlight --open-anime" style="color: #d7d5d5b1;">${data.title.toUpperCase()}</div>`
+        }
+    }
+    $("#finished-content").html(animeDropdownHTML)
 }
 
 $(".-watching").on("click", () => {
@@ -725,9 +768,9 @@ $(".-history-role").on("click", async (event) => {
     if (category === "Genres") {
         // get all from existing dict
         for (abbrev in genres) rows.push(genres[abbrev])
-    } else if (category == "Tags") {
+    } else /*(category == "Tags")*/ {
         // get all tags from tagContent
-        let queryRows = await ipcRenderer.invoke("queryDB", "get", "all", {"table": "Tag"})
+        let queryRows = await ipcRenderer.invoke("queryDB", "get", "all", {"table": category.slice(0, -1)})
         console.log(queryRows)
         queryRows.forEach(row => {
             rows.push(row.name)
@@ -776,6 +819,16 @@ $(".-watch-code").on("click", async (event) => {
         "value": index
     }
     
+    let endDate = null;
+    if (index == 2) {
+        endDate = new Date().toISOString()  
+    }
+    await ipcRenderer.invoke("queryDB", "ud", "update", {
+        "property": "endtime",
+        "value": `'${endDate}'`,
+        "animeId": animeId, 
+    })
+
     await ipcRenderer.invoke("queryDB", "ud", "update", args)
     console.log('shoulda updated')
     await loadAnimeStatuses(animeId)
@@ -910,11 +963,18 @@ $(document).on("click", ".-add-filter-role", async function (event) {
     let txt = $(event.target).text().trim()
     let filterCategory = $(event.target).data("filtertype").toLowerCase()
     
+    if (filters[filterCategory].includes(txt)) {
+        return
+    }
+
     filters[filterCategory].push(txt)
 
-    if (filterCategory == "tags") {
-        let id = await ipcRenderer.invoke("queryDB", "get", "id", {table: "Tag", name: txt})
-        filters.__tagIds.push(id[0].id)
+    if (filterCategory == "tags" || filterCategory == "recommenders") {
+        let lowered = filterCategory.slice(0, -1)
+        let capital = capitalizeFirstLetter(lowered)
+
+        let id = await ipcRenderer.invoke("queryDB", "get", "id", {table: capital, name: txt})
+        filters[`__${lowered}Ids`].push(id[0].id)
     }
 
     updateHistoryContent(filterCategory)
@@ -927,8 +987,9 @@ $(document).on("click", ".-delete-history-role", async (event) => {
     const index = filters[filterCategory].indexOf(txt)
     filters[filterCategory].splice(index, 1)
 
-    if (filterCategory === "tags") {
-        filters.__tagIds.splice(index, 1)
+    if (filterCategory === "tags" || filterCategory === "recommenders") {
+        let lowered = filterCategory.slice(0, -1)
+        filters[`__${lowered}Ids`].splice(index, 1)
     }
 
     $(event.target).remove()
