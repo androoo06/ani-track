@@ -31,7 +31,8 @@
                     "**/*"
                 ]
             }
-        ]
+        ],
+        "icon": "logo.ico"
     },
     "dependencies": {
         "anilist-node": "^1.14.1",
