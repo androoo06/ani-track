@@ -39,7 +39,7 @@
         "childprocess": "^2.0.2",
         "electron-updater": ">=6.3.0-alpha.6",
         "jquery": "^3.7.1",
-        "sqlite3": "^5.1.7"
+        "sqlite3": "^5.0.2"
     },
     "devDependencies": {
         "electron": "^26.1.0",
