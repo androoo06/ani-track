@@ -1,4 +1,4 @@
-const { ipcRenderer } = require("electron");
+const { ipcRenderer, ipcMain } = require("electron");
 const { watch } = require("original-fs");
 const { Chart } = require('chart.js/auto');
 
@@ -110,6 +110,10 @@ function hitEnter(e) {
 
 function capitalizeFirstLetter(val) {
     return String(val).charAt(0).toUpperCase() + String(val).slice(1);
+}
+
+function fixTitle(s) {
+    return s.replaceAll("'", "''")
 }
 
 function peek(arr) {
@@ -263,11 +267,15 @@ async function refreshViewWatchlist(table) {
 
     let animes = []
     await Promise.all(rows.map(async (row) => {
-        let data = await ipcRenderer.invoke("queryAnilist", "specifics", row.id)
-        if (data) {
+        let data = await ipcRenderer.invoke("queryDB", "get", "name", {
+            "table": "Anime",
+            "id": row.id,
+        })
+
+        if (data.length > 0) {
             // console.log(data)
-            html += `<div class="list-tab no-highlight --open-anime" id="${row.id}" style="color: #d7d5d5b1;">${data.title}</div>`
-            animes.push([data.title, row.id])
+            html += `<div class="list-tab no-highlight --open-anime" id="${row.id}" style="color: #d7d5d5b1;">${data[0].name}</div>`
+            animes.push([data[0].name, row.id])
         } 
     }))
 
@@ -337,9 +345,12 @@ async function loadCurrentlyWatching() {
     let html = ""
     let rows = await ipcRenderer.invoke("queryDB", "get", "watching", {"watchCode": 1})
     await Promise.all(rows.map(async (row) => {
-        let data = await ipcRenderer.invoke("queryAnilist", "specifics", row.id)
-        if (data) {
-            html += `<div id="${row.id}" class="list-tab no-highlight --open-anime" style="color: #d7d5d5b1;">${data.title.toUpperCase()}</div>`
+        let data = await ipcRenderer.invoke("queryDB", "get", "name", {
+            "table": "Anime",
+            "id": row.id,
+        })
+        if (data.length > 0) {
+            html += `<div id="${row.id}" class="list-tab no-highlight --open-anime" style="color: #d7d5d5b1;">${data[0].name.toUpperCase()}</div>`
         }
     }))
 
@@ -643,8 +654,13 @@ async function loadDataTab() {
                 totalStars += a.rating
             }
 
-            let data = await ipcRenderer.invoke("queryAnilist", "specifics", a.id)
-            options += `<div id="${a.id}" class="list-tab no-highlight --open-anime" style="color: #d7d5d5b1;">${data.title.toUpperCase()}</div>`
+            let data = await ipcRenderer.invoke("queryDB", "get", "name", {
+                "table": "Anime",
+                "id": a.id,
+            })
+            if (data.length > 0) {
+                options += `<div id="${a.id}" class="list-tab no-highlight --open-anime" style="color: #d7d5d5b1;">${data[0].name.toUpperCase()}</div>`
+            }
         }
 
         let collapsible = 
@@ -681,9 +697,12 @@ async function loadDataTab() {
     })
     for (let i=0; i<watched.length; i++) {
         let anime = watched[i]
-        let data = await ipcRenderer.invoke("queryAnilist", "specifics", anime.id)
-        if (data) {
-            animeDropdownHTML += `<div id="${anime.id}" class="list-tab no-highlight --open-anime" style="color: #d7d5d5b1;">${data.title.toUpperCase()}</div>`
+        let data = await ipcRenderer.invoke("queryDB", "get", "name", {
+            "table": "Anime",
+            "id": anime.id,
+        })
+        if (data.length > 0) {
+            animeDropdownHTML += `<div id="${anime.id}" class="list-tab no-highlight --open-anime" style="color: #d7d5d5b1;">${data[0].name.toUpperCase()}</div>`
         }
     }
     $("#finished-content").html(animeDropdownHTML)
@@ -814,8 +833,9 @@ $(".-watch-code").on("click", async (event) => {
 
     let animeId = $("#anime-popup").data("animeId")
     let animeGenres = $("#anime-popup").data("genres")
+    let name = $("#anime-popup").find(".-title-disp").text()
 
-    let args0 = { "animeId": animeId, "genres": animeGenres }
+    let args0 = { "animeId": animeId, "genres": animeGenres, "name": fixTitle(name)}
     await ipcRenderer.invoke("queryDB", "insert", "anime", args0)
 
     let args = {
@@ -876,10 +896,13 @@ $("#apply-filters").on("click", async (event) => {
 
     let nameFiltered = []
     await Promise.all(filtered.map(async (id) => {
-        let data = await ipcRenderer.invoke("queryAnilist", "specifics", id)
-        if (data) {
-            nameFiltered.push(data.title)
-            cache[data.title.toLowerCase()] = id
+        let data = await ipcRenderer.invoke("queryDB", "get", "name", {
+            "table": "Anime",
+            "id": id,
+        })
+        if (data.length > 0) {
+            nameFiltered.push(data[0].name)
+            cache[data[0].name.toLowerCase()] = id
         }
     }))
     // console.log(nameFiltered)
@@ -1009,8 +1032,9 @@ $(document).on("click", ".outlined", async function() {
     // update the rating in the list
     let animeId = $("#anime-popup").data("animeId")
     let animeGenres = $("#anime-popup").data("genres")
+    let name = $("#anime-popup").find(".-title-disp").text()
 
-    let args0 = { "animeId": animeId, "genres": animeGenres }
+    let args0 = { "animeId": animeId, "genres": animeGenres, "name": fixTitle(name)}
     await ipcRenderer.invoke("queryDB", "insert", "anime", args0)
 
     if (currentRating == 0) {
@@ -1052,8 +1076,9 @@ $(document).on("click", ".-delete-role", async function (event) {
 $(document).on("click", ".-addrole-internal", async function (event) {
     let [category, value, categoryId, animeId] = event.target.id.split("$separator$")
     let animeGenres = $("#anime-popup").data("genres")
+    let name = $("#anime-popup").find(".-title-disp").text()
 
-    let args0 = { "animeId": animeId, "genres": animeGenres }
+    let args0 = { "animeId": animeId, "genres": animeGenres, "name": fixTitle(name) }
     await ipcRenderer.invoke("queryDB", "insert", "anime", args0)
 
     let args2 = {
@@ -1091,11 +1116,8 @@ $("#create-new-popup").find(".-search-bar").on("keypress", async function (e) {
 
     await ipcRenderer.invoke("queryDB", "insert", "element", args)
 
-    let tab = `<div class="list-tab no-highlight --view-watchlist" style="color: #d7d5d5b1;">${name}</div>`
-
-    // add to homepage, manage tab
-    $("#manage-tab")[0].innerHTML += tab
-    $(`#${managing.toLowerCase().trim()}-content`)[0].innerHTML += tab
+    // reload the category or w/e
+    loadCategory(managing.toLowerCase().trim())
 })
 
 $("#search-popup").find(".-search-bar").on("keypress", async function (e) {
@@ -1129,7 +1151,26 @@ $("#search-popup").find(".-search-bar").on("keypress", async function (e) {
 })
 
 // load data when app launches
-function render() {
+async function render() {
+    // for updating outdated data (my data)
+    // console.log("starting")
+    // let animes = await ipcRenderer.invoke("queryDB", "get", "all", {table:"Anime"})
+    // for (let i=0; i<animes.length; i++) {
+    //     let anime = animes[i]
+    //     if (anime.id < 115113) {
+    //         continue
+    //     }
+
+    //     let data = await ipcRenderer.invoke("queryAnilist", "specifics", anime.id)
+    //     await ipcRenderer.invoke("queryDB", "ud", "update", {
+    //         "property": "name",
+    //         "value": `'${data.title.replaceAll("'", "''")}'`,
+    //         "animeId": anime.id
+    //     })
+    //     console.log(data.title.replaceAll("'", "''"))
+    // }
+    // console.log("done")
+
     // load each manage tab
     (categories).forEach(async (tabName) => {
         loadCategory(tabName)

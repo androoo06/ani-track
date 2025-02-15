@@ -85,7 +85,7 @@ let queries = {
     },
 
     "insert": {
-        "anime": `INSERT OR IGNORE INTO Anime (id, genres) VALUES ([animeId], "[genres]")`,
+        "anime": `INSERT OR IGNORE INTO Anime (id, name, genres) VALUES ([animeId], '[name]', "[genres]")`,
         "content": "INSERT OR IGNORE INTO [table-content] (id, animeId) VALUES ([id], [animeId])",
         "element": `INSERT OR IGNORE INTO [table] (name) VALUES ("[name]")`,
     },
