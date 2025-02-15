@@ -289,6 +289,7 @@ async function refreshViewWatchlist(table) {
         } 
     }))
 
+    $(`#view-watchlist-animecontent`).parent().find(".left").find(".left-c1").text("ANIMES ON THIS LIST  (" + animes.length + ")")
     $(`#view-watchlist-animecontent`).html(`<br>${html}`)
 
     fillWheel(animes)
