@@ -5,16 +5,31 @@ const path = require('path')
 const { app } = require('electron')
 
 // Get whether it's in testing or in production
-var rootDir = path.dirname(__dirname).replace("app.asar", "")
+let projectRoot = __dirname;
+let prod = projectRoot.indexOf("app.asar")
+if (prod > -1) {
+    projectRoot = projectRoot.slice(0, prod)
+}
+let dev = projectRoot.indexOf("\\js")
+if (dev > -1) {
+    projectRoot = projectRoot.slice(0, dev)
+}
+
+var rootDir = projectRoot
 var assets = path.join(rootDir, 'assets')
 
-if (!existsSync(assets)) {
-    assets = path.join(rootDir, "src/assets")
-}
+// if (!existsSync(assets)) {
+//     assets = path.join(rootDir, "src/assets")
+//     console.log("dev!")
+// }
 
 let userDataPath = app.getPath('userData')
 let dsPath = userDataPath + "/anitrack_data.db"
 let defaultPath = assets + "/data/default.db"
+
+// console.log(rootDir)
+// console.log(assets)
+// console.log(userDataPath)
 
 // Database
 let db;

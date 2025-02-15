@@ -1,6 +1,6 @@
 {
     "name": "ani-track",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "",
     "main": "src/js/app.js",
     "scripts": {

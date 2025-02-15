@@ -4,7 +4,18 @@ const db = require("./dbManager")
 const anilist = require("./anilist")
 const path = require('path')
 
-let projectRoot = path.dirname(__dirname).replace("app.asar", "")
+// console.log("!",__dirname)
+
+let projectRoot = __dirname;
+let prod = projectRoot.indexOf("app.asar")
+if (prod > -1) {
+    projectRoot = projectRoot.slice(0, prod)
+}
+let dev = projectRoot.indexOf("\\js")
+if (dev > -1) {
+    projectRoot = projectRoot.slice(0, dev)
+}
+
 let root = null;
 
 function wrapMessage(channel, data) {
