@@ -116,6 +116,16 @@ function fixTitle(s) {
     return s.replaceAll("'", "''")
 }
 
+function arrayIntersection(arr1, arr2) {
+    const set2 = new Set(arr2.map(item => JSON.stringify(item))); 
+    return arr1.filter(item => set2.has(JSON.stringify(item)));
+}
+
+function round(value, precision) {
+    var multiplier = Math.pow(10, precision || 0);
+    return Math.round(value * multiplier) / multiplier;
+}
+
 function peek(arr) {
     if (arr.length == 0) return;
     return arr[arr.length - 1]
@@ -626,11 +636,35 @@ async function loadDataTab() {
     animeRows.forEach(row => {
         totalRating += row.rating
     })
-    let averageRating = totalRating / animeRows.length
+    let averageRating = round(totalRating / animeRows.length, 1)
     $("#average-star-rating").text(`Average Star Rating: ${averageRating}`)
 
+    // watched animes dropdown
+    let animeDropdownHTML = "<br>"
+
+    let allAnime = await ipcRenderer.invoke("queryDB", "get", "watching-all", {"watchCode": 2})
+    allAnime.sort(function(a, b) {
+        if (a.endtime == null || b.endtime == null) {
+            console.warn("EndTime not set properly for animeId", a.id, "or", b.id)
+            return 0;
+        }
+        return (a.endtime < b.endtime) ? -1 : ((a.endtime > b.endtime) ? 1 : 0)
+    })
+
+    for (let i=0; i<allAnime.length; i++) {
+        let anime = allAnime[i]
+        let data = await ipcRenderer.invoke("queryDB", "get", "name", {
+            "table": "Anime",
+            "id": anime.id,
+        })
+        if (data.length > 0) {
+            animeDropdownHTML += `<div id="${anime.id}" class="list-tab no-highlight --open-anime" style="color: #d7d5d5b1;">${data[0].name.toUpperCase()}</div>`
+        }
+    }
+    $("#finished-content").html(animeDropdownHTML)
+
     // recommenders dropdowns
-    let collapsibles = ""
+    let ratings = []
     let recommenders = await ipcRenderer.invoke("queryDB", "get", "all", {table: "Recommender"})
     for (let i=0; i<recommenders.length; i++) {
         let r = recommenders[i]
@@ -639,7 +673,7 @@ async function loadDataTab() {
         let total = animes.length;
         let totalStars = 0;
 
-        let options = ""
+        let animesList = [] 
         for (let j=0; j<animes.length; j++) {
             let a = animes[j]
             
@@ -659,15 +693,44 @@ async function loadDataTab() {
                 "id": a.id,
             })
             if (data.length > 0) {
-                options += `<div id="${a.id}" class="list-tab no-highlight --open-anime" style="color: #d7d5d5b1;">${data[0].name.toUpperCase()}</div>`
+                animesList.push([data[0].name, a.id])
             }
         }
 
+        ratings.push({"name": r.name, "totalAnimes": total, "totalStars": totalStars, "animesList": animesList})
+    }
+
+    // this loop is to make the allAnime array compatible with recommender.animesList for the intersection function
+    for (let i=0; i<allAnime.length; i++) {
+        let a = allAnime[i]
+        allAnime[i] = [a.name, a.id]
+    }
+
+    let collapsibles = ""
+    let under3 = ""
+    ratings.sort(function(a, b) {
+        let avgA = a.totalStars / a.totalAnimes
+        let avgB = b.totalStars / b.totalAnimes
+
+        return (avgA > avgB) ? -1 : ((avgA < avgB) ? 1 : 0);
+    })
+    ratings.forEach(recommender => {
+        if (recommender.totalAnimes == 0) return;
+
+        let sorted = arrayIntersection(allAnime, recommender.animesList)
+        let options = ""
+
+        sorted.forEach(animeData => {
+            options += `<div id="${animeData[1]}" class="list-tab no-highlight --open-anime" style="color: #d7d5d5b1;">${animeData[0].toUpperCase()}</div>`
+        })
+
+        let avg = round(recommender.totalStars/recommender.totalAnimes, 1)
+
         let collapsible = 
-            `<div class="collapsible recommender-collapsible no-highlight" id="recommended-content-${r.name}">
+            `<div class="collapsible recommender-collapsible no-highlight" id="recommended-content-${recommender.name}">
                 <div class="left">
                     <div class="left-c1">
-                        ${r.name}  <mark class="rec-rating-span">(${totalStars}/${total}) = ${totalStars/total}</mark>
+                        ${recommender.name}  <mark class="rec-rating-span">(${recommender.totalStars}/${recommender.totalAnimes}) = ${avg}</mark>
                     </div>
                     <span></span>
                 </div>
@@ -676,36 +739,19 @@ async function loadDataTab() {
                 </div>
             </div>`
 
-        collapsibles += collapsible   
-    }
+        if (recommender.totalAnimes < 3) {
+            under3 += collapsible
+        } else {
+            collapsibles += collapsible
+        }
+    })
 
-    $("#recommender-stats").html(collapsibles)
+    $("#recommender-stats").html(collapsibles + "UNDER 3 RECS<br>" + under3)
 
     // breakdown charts
     getTblCount("Tag", watched)
     getTblCount("Recommender", watched)
-    getGenreCount() //different behavior than the above two
-
-    // watched animes dropdown
-    let animeDropdownHTML = "<br>"
-    watched.sort(function(a, b) {
-        // if (a.endtime == null || b.endtime == null) {
-        //     console.warn("EndTime not set properly for animeId", a.id, "or", b.id)
-        //     return 0;
-        // }
-        return (a.endtime < b.endtime) ? -1 : ((a.endtime > b.endtime) ? 1 : 0)
-    })
-    for (let i=0; i<watched.length; i++) {
-        let anime = watched[i]
-        let data = await ipcRenderer.invoke("queryDB", "get", "name", {
-            "table": "Anime",
-            "id": anime.id,
-        })
-        if (data.length > 0) {
-            animeDropdownHTML += `<div id="${anime.id}" class="list-tab no-highlight --open-anime" style="color: #d7d5d5b1;">${data[0].name.toUpperCase()}</div>`
-        }
-    }
-    $("#finished-content").html(animeDropdownHTML)
+    getGenreCount() //different behavior than the above two   
 }
 
 $(".-watching").on("click", () => {

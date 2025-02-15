@@ -81,6 +81,7 @@ let queries = {
         "rating": "SELECT (rating) FROM Anime WHERE (id = [id])",
         "recommended": "SELECT A.* FROM Anime A WHERE A.id IN (SELECT (animeId) FROM RecommenderContent R WHERE (R.id = [id]))",
         "watching": "SELECT (id) FROM Anime WHERE (watching = [watchCode])",
+        "watching-all": "SELECT * FROM Anime WHERE (watching = [watchCode])",
         "watch-code": "SELECT (watching) FROM Anime WHERE (id = [id])",
     },
 
